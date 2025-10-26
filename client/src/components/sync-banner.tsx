@@ -17,7 +17,7 @@ export function SyncBanner() {
   const syncAll = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/sync-all", {});
-      return response;
+      return response.json();
     },
     onSuccess: (data: any) => {
       toast({
@@ -35,7 +35,8 @@ export function SyncBanner() {
       if (error.message?.includes("authenticated") || error.status === 401) {
         // Get OAuth URL and open popup
         try {
-          const authData = await apiRequest("GET", "/api/auth/google/url");
+          const authResponse = await apiRequest("GET", "/api/auth/google/url");
+          const authData = await authResponse.json();
           const authWindow = window.open(
             authData.url,
             "Google Auth",
