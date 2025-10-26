@@ -35,7 +35,7 @@ export function SyncBanner() {
       if (error.message?.includes("authenticated") || error.status === 401) {
         // Get OAuth URL and open popup
         try {
-          const authData = await apiRequest("GET", "/api/auth/google/url", {});
+          const authData = await apiRequest("GET", "/api/auth/google/url");
           const authWindow = window.open(
             authData.url,
             "Google Auth",
