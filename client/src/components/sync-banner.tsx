@@ -3,7 +3,7 @@ import { RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Email } from "@shared/schema";
 
 export function SyncBanner() {
@@ -16,7 +16,8 @@ export function SyncBanner() {
 
   const syncAll = useMutation({
     mutationFn: async () => {
-      return apiRequest("POST", "/api/sync-all", {});
+      const response = await apiRequest("POST", "/api/sync-all", {});
+      return response;
     },
     onSuccess: (data: any) => {
       toast({
@@ -29,12 +30,45 @@ export function SyncBanner() {
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
       setDismissed(true);
     },
-    onError: (error: any) => {
-      toast({
-        title: "Sync Failed",
-        description: error.message || "Failed to sync data",
-        variant: "destructive",
-      });
+    onError: async (error: any) => {
+      // Check if error is authentication related
+      if (error.message?.includes("authenticated") || error.status === 401) {
+        // Get OAuth URL and open popup
+        try {
+          const authData = await apiRequest("GET", "/api/auth/google/url", {});
+          const authWindow = window.open(
+            authData.url,
+            "Google Auth",
+            "width=600,height=600"
+          );
+          
+          // Listen for auth success
+          const handleMessage = (event: MessageEvent) => {
+            if (event.data.type === "gmail-auth-success") {
+              window.removeEventListener("message", handleMessage);
+              authWindow?.close();
+              toast({
+                title: "Authentication Successful",
+                description: "Please click Sync Now again to sync your data",
+              });
+            }
+          };
+          
+          window.addEventListener("message", handleMessage);
+        } catch (authError: any) {
+          toast({
+            title: "Authentication Failed",
+            description: authError.message || "Failed to authenticate with Google",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: error.message || "Failed to sync data",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -51,7 +85,7 @@ export function SyncBanner() {
             Welcome to Inbox AI! Get started by syncing your Gmail and Calendar.
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Click the button to fetch your latest emails and calendar events
+            Click the button to authenticate with Google and fetch your emails
           </p>
         </div>
         <div className="flex items-center gap-2">

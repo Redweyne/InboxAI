@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { getUncachableGmailClient } from "./gmail-client";
-import { getUncachableGoogleCalendarClient } from "./calendar-client";
+import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated } from "./gmail-client";
+import { getUncachableGoogleCalendarClient, setTokens as setCalendarTokens } from "./calendar-client";
 import {
   categorizeEmail,
   isEmailUrgent,
@@ -14,6 +14,53 @@ import {
 import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // ============ OAUTH ROUTES ============
+  
+  // Check if user is authenticated
+  app.get("/api/auth/status", (req, res) => {
+    res.json({ authenticated: isAuthenticated() });
+  });
+  
+  // Get OAuth URL
+  app.get("/api/auth/google/url", (req, res) => {
+    try {
+      const authUrl = getAuthUrl();
+      res.json({ url: authUrl });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // OAuth callback
+  app.get("/api/auth/google/callback", async (req, res) => {
+    try {
+      const code = req.query.code as string;
+      if (!code) {
+        return res.status(400).send('Missing authorization code');
+      }
+      
+      const tokens = await handleAuthCallback(code);
+      // Also set tokens for calendar client
+      setCalendarTokens(tokens);
+      
+      // Redirect back to the app
+      res.send(`
+        <html>
+          <body>
+            <h1>Authentication Successful!</h1>
+            <p>You can now close this window and return to the app.</p>
+            <script>
+              window.opener?.postMessage({ type: 'gmail-auth-success' }, '*');
+              setTimeout(() => window.close(), 2000);
+            </script>
+          </body>
+        </html>
+      `);
+    } catch (error: any) {
+      res.status(500).send(`Authentication failed: ${error.message}`);
+    }
+  });
+  
   // ============ EMAIL ROUTES ============
   
   // Sync emails from Gmail
@@ -336,8 +383,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============ INITIAL DATA SYNC ============
   
-  // Endpoint to trigger initial sync with sample data
+  // Endpoint to trigger initial sync
   app.post("/api/sync-all", async (req, res) => {
+    try {
+      // Check if authenticated
+      if (!isAuthenticated()) {
+        return res.status(401).json({ 
+          error: "Not authenticated",
+          needsAuth: true 
+        });
+      }
+
+      // Sync emails from Gmail
+      const gmail = await getUncachableGmailClient();
+      const emailResponse = await gmail.users.messages.list({
+        userId: "me",
+        maxResults: 20,
+      });
+
+      const messages = emailResponse.data.messages || [];
+      let emailCount = 0;
+
+      for (const message of messages) {
+        try {
+          const fullMessage = await gmail.users.messages.get({
+            userId: "me",
+            id: message.id!,
+            format: "full",
+          });
+
+          const headers = fullMessage.data.payload?.headers || [];
+          const getHeader = (name: string) =>
+            headers.find(h => h.name?.toLowerCase() === name.toLowerCase())?.value || "";
+
+          const from = getHeader("from");
+          const to = getHeader("to");
+          const subject = getHeader("subject") || "(No Subject)";
+          const date = getHeader("date");
+
+          let body = "";
+          const parts = fullMessage.data.payload?.parts || [];
+          
+          if (fullMessage.data.payload?.body?.data) {
+            body = Buffer.from(fullMessage.data.payload.body.data, "base64").toString("utf-8");
+          } else if (parts.length > 0) {
+            const textPart = parts.find(p => p.mimeType === "text/plain");
+            if (textPart?.body?.data) {
+              body = Buffer.from(textPart.body.data, "base64").toString("utf-8");
+            }
+          }
+
+          body = body.substring(0, 5000);
+          const snippet = summarizeEmail(subject, body);
+          const category = categorizeEmail(from, subject, body);
+          const urgent = isEmailUrgent(from, subject, body);
+
+          const labels = fullMessage.data.labelIds || [];
+          const isRead = !labels.includes("UNREAD");
+          const isStarred = labels.includes("STARRED");
+
+          const attachmentCount = parts.filter(p => p.filename && p.filename.length > 0).length;
+
+          const emailData: InsertEmail = {
+            messageId: fullMessage.data.id!,
+            threadId: fullMessage.data.threadId || fullMessage.data.id!,
+            subject,
+            from,
+            to,
+            snippet,
+            body,
+            date: date ? new Date(date) : new Date(),
+            isRead,
+            isStarred,
+            category,
+            isUrgent: urgent,
+            labels,
+            attachmentCount,
+          };
+
+          await storage.createEmail(emailData);
+          emailCount++;
+        } catch (err) {
+          console.error("Error syncing email:", err);
+          continue;
+        }
+      }
+
+      // Sync calendar events
+      const calendar = await getUncachableGoogleCalendarClient();
+      const now = new Date();
+      const future = new Date();
+      future.setDate(future.getDate() + 30);
+
+      const calendarResponse = await calendar.events.list({
+        calendarId: "primary",
+        timeMin: now.toISOString(),
+        timeMax: future.toISOString(),
+        maxResults: 50,
+        singleEvents: true,
+        orderBy: "startTime",
+      });
+
+      const events = calendarResponse.data.items || [];
+      let eventCount = 0;
+
+      for (const event of events) {
+        const eventData: InsertCalendarEvent = {
+          eventId: event.id!,
+          summary: event.summary || "(No Title)",
+          description: event.description || "",
+          location: event.location || "",
+          startTime: event.start?.dateTime ? new Date(event.start.dateTime) : new Date(event.start?.date!),
+          endTime: event.end?.dateTime ? new Date(event.end.dateTime) : new Date(event.end?.date!),
+          attendees: event.attendees?.map(a => a.email || "") || [],
+          organizer: event.organizer?.email || "",
+          status: event.status || "confirmed",
+          isAllDay: !!event.start?.date,
+          colorId: event.colorId || "",
+        };
+
+        await storage.createCalendarEvent(eventData);
+        eventCount++;
+      }
+
+      res.json({ 
+        success: true, 
+        emailCount,
+        eventCount,
+      });
+    } catch (error: any) {
+      console.error("Sync all error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Old sample data implementation below (keeping for reference, but commented out)
+  /*
+  app.post("/api/sync-all-sample", async (req, res) => {
     try {
       // Generate sample emails
       const sampleEmails = [
@@ -545,6 +727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error.message });
     }
   });
+  */
 
   const httpServer = createServer(app);
   return httpServer;

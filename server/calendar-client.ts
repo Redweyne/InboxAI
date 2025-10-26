@@ -1,52 +1,40 @@
-// Integration with Google Calendar using Replit connector blueprint
+// Google Calendar OAuth integration
 import { google } from 'googleapis';
 
-let connectionSettings: any;
+const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 
-async function getAccessToken() {
-  if (connectionSettings?.settings?.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
-    return connectionSettings.settings.access_token;
-  }
-  
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
-  const xReplitToken = process.env.REPL_IDENTITY 
-    ? 'repl ' + process.env.REPL_IDENTITY 
-    : process.env.WEB_REPL_RENEWAL 
-    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
-    : null;
+let cachedTokens: any = null;
 
-  if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+function getOAuth2Client() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/api/auth/google/callback`;
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your secrets.');
   }
 
-  connectionSettings = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-calendar',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
-      }
-    }
-  ).then(res => res.json()).then(data => data.items?.[0]);
+  return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+}
 
-  const accessToken = connectionSettings?.settings?.access_token || connectionSettings?.settings?.oauth?.credentials?.access_token;
+export function setTokens(tokens: any) {
+  cachedTokens = tokens;
+}
 
-  if (!connectionSettings || !accessToken) {
-    throw new Error('Google Calendar not connected');
-  }
-  return accessToken;
+export function isAuthenticated() {
+  return cachedTokens !== null;
 }
 
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
 // Always call this function again to get a fresh client.
 export async function getUncachableGoogleCalendarClient() {
-  const accessToken = await getAccessToken();
+  if (!cachedTokens) {
+    throw new Error('Google Calendar not authenticated. Please authenticate first.');
+  }
 
-  const oauth2Client = new google.auth.OAuth2();
-  oauth2Client.setCredentials({
-    access_token: accessToken
-  });
+  const oauth2Client = getOAuth2Client();
+  oauth2Client.setCredentials(cachedTokens);
 
   return google.calendar({ version: 'v3', auth: oauth2Client });
 }
