@@ -29,7 +29,7 @@ export default function Dashboard() {
   });
 
   const loadTemplateMutation = useMutation({
-    mutationFn: () => apiRequest("/api/template/load", { method: "POST" }),
+    mutationFn: () => apiRequest("POST", "/api/template/load"),
     onSuccess: async () => {
       toast({
         title: "Template data loaded",
@@ -43,7 +43,7 @@ export default function Dashboard() {
   });
 
   const clearDataMutation = useMutation({
-    mutationFn: () => apiRequest("/api/template/clear", { method: "POST" }),
+    mutationFn: () => apiRequest("POST", "/api/template/clear"),
     onSuccess: async () => {
       toast({
         title: "Data cleared",
