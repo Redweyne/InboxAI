@@ -323,26 +323,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       await storage.createChatMessage(userMessage);
 
-      // Get context for intelligent response
-      const emails = await storage.getEmails();
-      const events = await storage.getCalendarEvents();
-      const analytics = await storage.getEmailAnalytics();
-
-      // Generate AI response using rule-based intelligence
-      const responseContent = processChatQuery(content, {
-        emails,
-        events,
-        analytics,
-      });
+      // Generate AI response using Gemini AI
+      const { generateChatResponse } = await import("./ai-service");
+      const { response: responseContent, suggestions } = await generateChatResponse(content, true);
 
       // Save AI response
       const aiMessage: InsertChatMessage = {
         role: "assistant",
         content: responseContent,
+        metadata: suggestions ? JSON.stringify({ suggestions }) : undefined,
       };
       await storage.createChatMessage(aiMessage);
 
-      res.json({ success: true });
+      res.json({ success: true, suggestions });
     } catch (error: any) {
       console.error("Chat error:", error);
       res.status(500).json({ error: error.message });

@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import type { ChatMessage } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 
-const suggestedPrompts = [
+const defaultSuggestedPrompts = [
   "Summarize today's emails",
   "Show urgent emails",
   "Find free time this week",
@@ -28,6 +28,7 @@ type ChatFormValues = z.infer<typeof chatFormSchema>;
 
 export default function Chat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [suggestions, setSuggestions] = useState<string[]>(defaultSuggestedPrompts);
 
   const form = useForm<ChatFormValues>({
     resolver: zodResolver(chatFormSchema),
@@ -44,8 +45,11 @@ export default function Chat() {
     mutationFn: async (content: string) => {
       return apiRequest("POST", "/api/chat/send", { content });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions);
+      }
       form.reset();
     },
   });
@@ -107,7 +111,7 @@ export default function Chat() {
               
               {/* Suggested prompts */}
               <div className="flex flex-wrap gap-2 justify-center">
-                {suggestedPrompts.map((prompt) => (
+                {suggestions.map((prompt) => (
                   <Badge
                     key={prompt}
                     variant="outline"
