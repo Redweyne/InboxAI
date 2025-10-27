@@ -1185,8 +1185,38 @@ export class DbStorage implements IStorage {
     };
   }
 
-  // Template data loader - reuses the MemStorage implementation
+  // Template data loader - idempotent version that clears existing template data first
   async loadTemplateData(): Promise<void> {
+    // Clear any existing template data first to make this idempotent
+    const templateEmailIds = [
+      'template-urgent-1', 'template-urgent-2', 'template-important-1', 'template-important-2',
+      'template-promo-1', 'template-social-1', 'template-update-1', 'template-newsletter-1'
+    ];
+    const templateEventIds = [
+      'template-event-1', 'template-event-2', 'template-event-3', 'template-event-4', 'template-event-5'
+    ];
+    const templateTaskTitles = [
+      'Review and approve Q4 budget proposal',
+      'Complete self-assessment for performance review',
+      'Prepare slides for client presentation',
+      'Schedule 1-on-1s with team members',
+      'Review Project Alpha weekly update',
+      'Submit team goals for next quarter',
+      'Book dentist appointment',
+      'Respond to LinkedIn comments'
+    ];
+    
+    // Delete existing template data (using OR conditions for bulk delete)
+    for (const messageId of templateEmailIds) {
+      await this.db.delete(emails).where(eq(emails.messageId, messageId));
+    }
+    for (const eventId of templateEventIds) {
+      await this.db.delete(calendarEvents).where(eq(calendarEvents.eventId, eventId));
+    }
+    for (const title of templateTaskTitles) {
+      await this.db.delete(tasks).where(eq(tasks.title, title));
+    }
+    
     const now = new Date();
 
     const templateEmails: InsertEmail[] = [
