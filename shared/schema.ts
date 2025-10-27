@@ -114,3 +114,62 @@ export interface DraftResponse {
   body: string;
   tone: string; // professional, casual, formal
 }
+
+// Tasks/Todo schema for task management
+export const tasks = pgTable("tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description"),
+  priority: text("priority").notNull(), // high, medium, low
+  status: text("status").notNull(), // pending, in_progress, completed, cancelled
+  dueDate: timestamp("due_date"),
+  relatedEmailId: text("related_email_id"),
+  relatedEventId: text("related_event_id"),
+  category: text("category"), // work, personal, follow-up, etc
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTask = z.infer<typeof insertTaskSchema>;
+export type Task = typeof tasks.$inferSelect;
+
+// Dashboard data interface
+export interface DashboardData {
+  greeting: string;
+  date: string;
+  summary: {
+    urgentEmails: number;
+    unreadEmails: number;
+    todayMeetings: number;
+    pendingTasks: number;
+  };
+  urgentItems: Array<{
+    id: string;
+    type: 'email' | 'event' | 'task';
+    title: string;
+    description: string;
+    priority: 'high' | 'medium' | 'low';
+    time?: string;
+    from?: string;
+    quickActions?: Array<{
+      label: string;
+      action: string;
+      variant?: 'default' | 'destructive' | 'outline';
+    }>;
+  }>;
+  upcomingEvents: Array<{
+    id: string;
+    title: string;
+    startTime: string;
+    endTime: string;
+    location?: string;
+    attendees?: string[];
+  }>;
+  topPriorityTasks: Task[];
+  insights: string[];
+}
