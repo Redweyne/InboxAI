@@ -1,8 +1,6 @@
 // Google Calendar OAuth integration
 import { google } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
-
 let cachedTokens: any = null;
 
 function getOAuth2Client() {

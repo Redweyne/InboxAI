@@ -11,6 +11,11 @@ Inbox AI is a personal productivity assistant that helps you manage your Gmail i
 - ✅ Implemented AI-powered chat service with context awareness
 - ✅ Updated chat interface to display dynamic AI-generated suggestions
 - ✅ Integrated free Gemini 2.5 Flash model for fast responses
+- ✅ **NEW: Enabled AI action capabilities** - AI can now send emails, modify emails (mark read/unread, delete, archive, star), and manage calendar events
+- ✅ Updated Gmail OAuth scopes to allow email sending and modification
+- ✅ Updated Calendar OAuth scopes to allow event creation/modification
+- ✅ Created AI action executor service for performing real actions
+- ✅ Added API routes for AI-triggered actions
 
 ## Key Features
 - 📧 **Email Management**: Sync and categorize Gmail messages with AI
@@ -55,9 +60,25 @@ Run: `npm run dev`
 
 ## AI Capabilities
 The Gemini AI assistant can:
+
+### Read & Analyze:
 - Summarize emails and identify urgent messages
 - Find free time slots in your calendar
 - Answer questions about emails and meetings
-- Draft professional email responses
 - Provide insights about email patterns
 - Suggest next actions based on context
+
+### Take Actions:
+- ✉️ **Send emails** on your behalf
+- 📧 **Modify emails**: Mark as read/unread, star, archive, or delete
+- 📅 **Manage calendar**: Create, update, or delete events
+- 🤖 **Automated assistance**: Just ask in natural language and the AI will execute
+
+### How to Use Actions:
+Simply ask the AI in natural language:
+- "Send an email to john@example.com with subject 'Meeting Follow-up' and body 'Thanks for the meeting!'"
+- "Mark all unread emails as read"
+- "Create a calendar event for tomorrow at 2pm called 'Team Meeting'"
+- "Delete that spam email from earlier"
+
+The AI will detect your intent and execute the action automatically!

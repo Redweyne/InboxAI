@@ -147,6 +147,17 @@ export async function executeEmailModify(action: EmailModifyAction): Promise<{ s
 
 export async function executeCalendarAction(action: CalendarAction): Promise<{ success: boolean; eventId?: string; error?: string }> {
   try {
+    const { getCachedTokens, hasRequiredScopes, clearAuth } = await import("./gmail-client");
+    const tokens = getCachedTokens();
+    
+    if (!hasRequiredScopes(tokens)) {
+      clearAuth();
+      return {
+        success: false,
+        error: 'Insufficient permissions. Please re-sync your Gmail and Calendar to grant all required permissions.',
+      };
+    }
+
     const calendar = await getUncachableGoogleCalendarClient();
 
     if (action.type === 'create_event' && action.eventData) {
@@ -184,23 +195,37 @@ export async function executeCalendarAction(action: CalendarAction): Promise<{ s
     }
 
     if (action.type === 'update_event' && action.eventId && action.eventData) {
+      const updatePayload: any = {};
+      
+      if (action.eventData.summary) {
+        updatePayload.summary = action.eventData.summary;
+      }
+      if (action.eventData.description) {
+        updatePayload.description = action.eventData.description;
+      }
+      if (action.eventData.location) {
+        updatePayload.location = action.eventData.location;
+      }
+      if (action.eventData.startTime) {
+        updatePayload.start = {
+          dateTime: action.eventData.startTime,
+          timeZone: 'America/New_York',
+        };
+      }
+      if (action.eventData.endTime) {
+        updatePayload.end = {
+          dateTime: action.eventData.endTime,
+          timeZone: 'America/New_York',
+        };
+      }
+      if (action.eventData.attendees) {
+        updatePayload.attendees = action.eventData.attendees.map(email => ({ email }));
+      }
+
       const response = await calendar.events.patch({
         calendarId: 'primary',
         eventId: action.eventId,
-        requestBody: {
-          summary: action.eventData.summary,
-          description: action.eventData.description,
-          location: action.eventData.location,
-          start: {
-            dateTime: action.eventData.startTime,
-            timeZone: 'America/New_York',
-          },
-          end: {
-            dateTime: action.eventData.endTime,
-            timeZone: 'America/New_York',
-          },
-          attendees: action.eventData.attendees?.map(email => ({ email })),
-        },
+        requestBody: updatePayload,
       });
 
       return {
@@ -215,6 +240,16 @@ export async function executeCalendarAction(action: CalendarAction): Promise<{ s
     };
   } catch (error: any) {
     console.error('Error executing calendar action:', error);
+    
+    if (error.message?.includes('insufficient') || error.code === 403) {
+      const { clearAuth } = await import("./gmail-client");
+      clearAuth();
+      return {
+        success: false,
+        error: 'Insufficient permissions detected. Please re-sync your account to grant calendar access.',
+      };
+    }
+    
     return {
       success: false,
       error: error.message || 'Failed to execute calendar action',

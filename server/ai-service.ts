@@ -117,35 +117,198 @@ ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  
 }
 
 async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
-  const lowerMessage = userMessage.toLowerCase();
+  try {
+    const { isAuthenticated } = await import("./gmail-client");
+    if (!isAuthenticated()) {
+      return {
+        type: 'error',
+        success: false,
+        details: 'Please sync your Gmail and Calendar first to enable actions.',
+      };
+    }
 
-  if (lowerMessage.includes('send') && (lowerMessage.includes('email') || lowerMessage.includes('message'))) {
-    const emailMatch = userMessage.match(/to\s+([^\s@]+@[^\s@]+\.[^\s@]+)/i);
-    const subjectMatch = userMessage.match(/subject[:\s]+"([^"]+)"|subject[:\s]+([^\n]+)/i);
+    const actionDetectionPrompt = `Analyze this user message and determine if they want to perform an action. If yes, extract the action details in JSON format.
+
+User message: "${userMessage}"
+
+Possible actions:
+1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
+2. mark_read: {type: "mark_read", emailId: "message_id"}
+3. mark_unread: {type: "mark_unread", emailId: "message_id"}
+4. delete: {type: "delete", emailId: "message_id"}
+5. archive: {type: "archive", emailId: "message_id"}
+6. star: {type: "star", emailId: "message_id"}
+7. unstar: {type: "unstar", emailId: "message_id"}
+8. create_event: {type: "create_event", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
+9. update_event: {type: "update_event", eventId: "event_id", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
+10. delete_event: {type: "delete_event", eventId: "event_id"}
+
+If no action is requested, return: {type: "none"}
+
+Return ONLY valid JSON, no explanation.`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+      },
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: actionDetectionPrompt }],
+        },
+      ],
+    });
+
+    const actionData = JSON.parse(response.text || '{"type":"none"}');
     
-    if (emailMatch) {
-      const to = emailMatch[1];
-      const subject = subjectMatch ? (subjectMatch[1] || subjectMatch[2]).trim() : 'Message from Inbox AI';
-      
-      const bodyStart = userMessage.toLowerCase().indexOf('body');
-      const body = bodyStart > 0 ? userMessage.substring(bodyStart + 4).trim() : userMessage;
+    if (actionData.type === 'none' || !actionData.type) {
+      return null;
+    }
+
+    if (actionData.type === 'send_email') {
+      if (!actionData.to || !actionData.subject || !actionData.body) {
+        return {
+          type: 'send_email',
+          success: false,
+          details: 'Missing required information. Please provide recipient, subject, and body.',
+        };
+      }
 
       const result = await executeAIAction({
         type: 'send_email',
-        to,
-        subject,
-        body: body || 'Sent via Inbox AI Assistant',
+        to: actionData.to,
+        subject: actionData.subject,
+        body: actionData.body,
+        cc: actionData.cc,
+        bcc: actionData.bcc,
       });
 
       return {
         type: 'send_email',
         success: result.success,
-        details: result.success ? `Email sent to ${to}` : result.error,
+        details: result.success ? `Email sent to ${actionData.to}` : result.error,
       };
     }
-  }
 
-  return null;
+    if (['mark_read', 'mark_unread', 'delete', 'archive', 'star', 'unstar'].includes(actionData.type)) {
+      if (!actionData.emailId) {
+        return {
+          type: actionData.type,
+          success: false,
+          details: 'Email ID required. Please specify which email to modify.',
+        };
+      }
+
+      const result = await executeAIAction({
+        type: actionData.type as any,
+        emailId: actionData.emailId,
+      });
+
+      return {
+        type: actionData.type,
+        success: result.success,
+        details: result.success ? `Email ${actionData.type.replace('_', ' ')}` : result.error,
+      };
+    }
+
+    if (actionData.type === 'create_event') {
+      if (!actionData.summary || !actionData.startTime || !actionData.endTime) {
+        return {
+          type: 'create_event',
+          success: false,
+          details: 'Missing event details. Need: summary, start time, and end time.',
+        };
+      }
+
+      const result = await executeAIAction({
+        type: 'create_event',
+        eventData: {
+          summary: actionData.summary,
+          description: actionData.description || '',
+          location: actionData.location || '',
+          startTime: actionData.startTime,
+          endTime: actionData.endTime,
+          attendees: actionData.attendees || [],
+        },
+      });
+
+      return {
+        type: 'create_event',
+        success: result.success,
+        details: result.success ? `Event "${actionData.summary}" created` : result.error,
+      };
+    }
+
+    if (actionData.type === 'update_event') {
+      if (!actionData.eventId) {
+        return {
+          type: 'update_event',
+          success: false,
+          details: 'Event ID required to update an event.',
+        };
+      }
+
+      if (!actionData.summary && !actionData.startTime && !actionData.endTime && 
+          !actionData.description && !actionData.location && !actionData.attendees) {
+        return {
+          type: 'update_event',
+          success: false,
+          details: 'Please specify what to update (summary, time, description, location, or attendees).',
+        };
+      }
+
+      const eventData: any = {};
+      if (actionData.summary) eventData.summary = actionData.summary;
+      if (actionData.description) eventData.description = actionData.description;
+      if (actionData.location) eventData.location = actionData.location;
+      if (actionData.startTime) eventData.startTime = actionData.startTime;
+      if (actionData.endTime) eventData.endTime = actionData.endTime;
+      if (actionData.attendees) eventData.attendees = actionData.attendees;
+
+      const result = await executeAIAction({
+        type: 'update_event',
+        eventId: actionData.eventId,
+        eventData,
+      });
+
+      return {
+        type: 'update_event',
+        success: result.success,
+        details: result.success ? `Event updated successfully` : result.error,
+      };
+    }
+
+    if (actionData.type === 'delete_event') {
+      if (!actionData.eventId) {
+        return {
+          type: 'delete_event',
+          success: false,
+          details: 'Event ID required to delete an event.',
+        };
+      }
+
+      const result = await executeAIAction({
+        type: 'delete_event',
+        eventId: actionData.eventId,
+      });
+
+      return {
+        type: 'delete_event',
+        success: result.success,
+        details: result.success ? `Event deleted successfully` : result.error,
+      };
+    }
+
+    return null;
+  } catch (error: any) {
+    console.error('Action detection error:', error);
+    return {
+      type: 'error',
+      success: false,
+      details: `Action detection failed: ${error.message}`,
+    };
+  }
 }
 
 function generateSuggestions(userMessage: string, aiResponse: string): string[] {

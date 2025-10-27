@@ -374,6 +374,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============ AI ACTION ROUTES ============
+
+  // Send email via AI
+  app.post("/api/actions/send-email", async (req, res) => {
+    try {
+      const { to, subject, body, cc, bcc } = req.body;
+
+      if (!to || !subject || !body) {
+        return res.status(400).json({ error: "Missing required fields: to, subject, body" });
+      }
+
+      const { executeSendEmail } = await import("./ai-actions");
+      const result = await executeSendEmail({ type: 'send_email', to, subject, body, cc, bcc });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Send email error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Modify email (mark read/unread, delete, archive, star)
+  app.post("/api/actions/modify-email", async (req, res) => {
+    try {
+      const { emailId, action } = req.body;
+
+      if (!emailId || !action) {
+        return res.status(400).json({ error: "Missing required fields: emailId, action" });
+      }
+
+      const validActions = ['mark_read', 'mark_unread', 'delete', 'archive', 'star', 'unstar'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` });
+      }
+
+      const { executeEmailModify } = await import("./ai-actions");
+      const result = await executeEmailModify({ type: action as any, emailId });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Modify email error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar actions (create, update, delete events)
+  app.post("/api/actions/calendar", async (req, res) => {
+    try {
+      const { action, eventData, eventId } = req.body;
+
+      if (!action) {
+        return res.status(400).json({ error: "Missing required field: action" });
+      }
+
+      const validActions = ['create_event', 'update_event', 'delete_event'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` });
+      }
+
+      const { executeCalendarAction } = await import("./ai-actions");
+      const result = await executeCalendarAction({ type: action as any, eventData, eventId });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Calendar action error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ============ INITIAL DATA SYNC ============
   
   // Endpoint to trigger initial sync

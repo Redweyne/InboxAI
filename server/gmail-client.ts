@@ -1,11 +1,17 @@
 // Gmail OAuth integration
 import { google } from 'googleapis';
 
-const SCOPES = [
+const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.modify',
   'https://www.googleapis.com/auth/gmail.send',
   'https://www.googleapis.com/auth/gmail.compose',
 ];
+
+const CALENDAR_SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+];
+
+const ALL_SCOPES = [...GMAIL_SCOPES, ...CALENDAR_SCOPES];
 
 let cachedTokens: any = null;
 
@@ -27,7 +33,7 @@ export function getAuthUrl() {
   const oauth2Client = getOAuth2Client();
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: SCOPES,
+    scope: ALL_SCOPES,
   });
 }
 
@@ -45,6 +51,18 @@ export function isAuthenticated() {
 
 export function clearAuth() {
   cachedTokens = null;
+}
+
+export function getCachedTokens() {
+  return cachedTokens;
+}
+
+export function hasRequiredScopes(tokens: any): boolean {
+  if (!tokens || !tokens.scope) {
+    return false;
+  }
+  const tokenScopes = tokens.scope.split(' ');
+  return ALL_SCOPES.every(scope => tokenScopes.includes(scope));
 }
 
 // WARNING: Never cache this client.
