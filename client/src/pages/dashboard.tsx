@@ -30,29 +30,29 @@ export default function Dashboard() {
 
   const loadTemplateMutation = useMutation({
     mutationFn: () => apiRequest("/api/template/load", { method: "POST" }),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Template data loaded",
         description: "Sample emails, events, and tasks have been loaded for testing.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/dashboard"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/emails"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/calendar/events"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
     },
   });
 
   const clearDataMutation = useMutation({
     mutationFn: () => apiRequest("/api/template/clear", { method: "POST" }),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Data cleared",
         description: "All emails, events, and tasks have been removed.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/dashboard"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/emails"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/calendar/events"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
     },
   });
 
