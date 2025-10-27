@@ -43,8 +43,29 @@ Inbox AI is a personal productivity assistant that helps you manage your Gmail i
 
 ## Environment Setup
 
-### Required Secrets
-- `GEMINI_API_KEY`: Google Gemini API key (get from https://aistudio.google.com/app/apikey)
+### Required Secrets (CRITICAL - App won't work without these!)
+
+This app requires three environment variables to function. When importing/exporting this project, these secrets are NOT included in the files for security reasons. You must add them manually in any new environment.
+
+**On Replit:**
+Add these as Secrets in the Replit environment (use the Secrets tab in the Tools panel):
+
+1. **`GEMINI_API_KEY`** - Google Gemini AI API key
+   - Powers the AI chat assistant
+   - Get it FREE at: https://aistudio.google.com/app/apikey
+   - Click "Get API Key" → "Create API Key"
+
+2. **`GOOGLE_CLIENT_ID`** - Google OAuth Client ID
+   - Enables Gmail and Calendar integration
+   - Get it from: https://console.cloud.google.com/
+   - Instructions in `.env.example` file
+
+3. **`GOOGLE_CLIENT_SECRET`** - Google OAuth Client Secret
+   - Works with Client ID for authentication
+   - Same source as Client ID
+
+**On Other Platforms:**
+Copy the `.env.example` file to `.env` and fill in your actual values.
 
 ### Optional Integrations (Already Configured)
 - Google Mail integration
