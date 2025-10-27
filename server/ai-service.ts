@@ -1,23 +1,36 @@
 import { GoogleGenAI } from "@google/genai";
 import { storage } from "./storage";
+import { executeAIAction, type AIAction } from "./ai-actions";
 
 // Blueprint integration reference: blueprint:javascript_gemini
 // Using Gemini 2.5 Flash for fast, free AI responses
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-const SYSTEM_CONTEXT = `You are an intelligent AI assistant for "Inbox AI", a personal email and calendar management application. Your purpose is to help users manage their inbox, calendar, and improve their productivity.
+const SYSTEM_CONTEXT = `You are an intelligent AI assistant for "Inbox AI", a personal email and calendar management application with ACTION CAPABILITIES. You can actually perform actions, not just provide advice.
 
-Key capabilities you should help with:
+Your capabilities include:
+**Reading & Analysis:**
 - Summarizing emails and finding important messages
 - Identifying urgent emails that need immediate attention
-- Helping users find free time slots in their calendar
-- Drafting professional email responses
-- Providing insights about email patterns and calendar schedules
-- Answering questions about their emails and upcoming meetings
-- Suggesting ways to organize and prioritize their inbox
+- Analyzing email patterns and calendar schedules
+- Answering questions about emails and upcoming meetings
 
-Be helpful, concise, and friendly. When users ask about their emails or calendar, provide specific, actionable insights. If you don't have access to their actual data yet (because they haven't synced), guide them to sync their Gmail and Calendar first.`;
+**Actions You Can Perform:**
+- Send emails on the user's behalf
+- Mark emails as read/unread
+- Star or archive emails
+- Delete emails (move to trash)
+- Create, update, or delete calendar events
+
+**Important Guidelines:**
+1. When a user asks you to perform an action (send email, delete email, etc.), you should DO IT and confirm it was done
+2. Be proactive - if the user says "send an email to..." or "delete that spam email", execute the action
+3. Always confirm what action you took after executing it
+4. If you need more information to perform an action (like who to send email to), ask first
+5. Be helpful, concise, and action-oriented
+
+If users haven't synced their Gmail and Calendar yet, guide them to do so first.`;
 
 export interface ChatRequest {
   message: string;
@@ -27,6 +40,11 @@ export interface ChatRequest {
 export interface ChatResponse {
   response: string;
   suggestions?: string[];
+  actionExecuted?: {
+    type: string;
+    success: boolean;
+    details?: string;
+  };
 }
 
 export async function generateChatResponse(
@@ -34,6 +52,8 @@ export async function generateChatResponse(
   includeContext: boolean = true
 ): Promise<ChatResponse> {
   try {
+    const actionResult = await detectAndExecuteAction(userMessage);
+    
     let contextPrompt = "";
     
     if (includeContext) {
@@ -52,8 +72,12 @@ export async function generateChatResponse(
 - Unread emails: ${analytics.unreadCount}
 - Urgent emails: ${analytics.urgentCount}
 - Upcoming events today: ${upcomingEvents.length}
-${urgentEmails.length > 0 ? `\nMost urgent emails:\n${urgentEmails.slice(0, 3).map(e => `  - From: ${e.from}, Subject: ${e.subject}`).join('\n')}` : ''}
+${urgentEmails.length > 0 ? `\nMost urgent emails:\n${urgentEmails.slice(0, 3).map(e => `  - ID: ${e.messageId}, From: ${e.from}, Subject: ${e.subject}`).join('\n')}` : ''}
 ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  - ${e.summary} at ${new Date(e.startTime).toLocaleString()}`).join('\n')}` : ''}`;
+
+      if (actionResult) {
+        contextPrompt += `\n\nAction just executed: ${JSON.stringify(actionResult)}`;
+      }
     }
 
     const conversationHistory = await storage.getChatMessages();
@@ -84,11 +108,44 @@ ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  
     return {
       response: aiResponse,
       suggestions,
+      actionExecuted: actionResult,
     };
   } catch (error) {
     console.error("AI Service Error:", error);
     throw new Error(`Failed to generate response: ${error}`);
   }
+}
+
+async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
+  const lowerMessage = userMessage.toLowerCase();
+
+  if (lowerMessage.includes('send') && (lowerMessage.includes('email') || lowerMessage.includes('message'))) {
+    const emailMatch = userMessage.match(/to\s+([^\s@]+@[^\s@]+\.[^\s@]+)/i);
+    const subjectMatch = userMessage.match(/subject[:\s]+"([^"]+)"|subject[:\s]+([^\n]+)/i);
+    
+    if (emailMatch) {
+      const to = emailMatch[1];
+      const subject = subjectMatch ? (subjectMatch[1] || subjectMatch[2]).trim() : 'Message from Inbox AI';
+      
+      const bodyStart = userMessage.toLowerCase().indexOf('body');
+      const body = bodyStart > 0 ? userMessage.substring(bodyStart + 4).trim() : userMessage;
+
+      const result = await executeAIAction({
+        type: 'send_email',
+        to,
+        subject,
+        body: body || 'Sent via Inbox AI Assistant',
+      });
+
+      return {
+        type: 'send_email',
+        success: result.success,
+        details: result.success ? `Email sent to ${to}` : result.error,
+      };
+    }
+  }
+
+  return null;
 }
 
 function generateSuggestions(userMessage: string, aiResponse: string): string[] {

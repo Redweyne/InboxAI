@@ -1,7 +1,11 @@
 // Gmail OAuth integration
 import { google } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/gmail.send',
+  'https://www.googleapis.com/auth/gmail.compose',
+];
 
 let cachedTokens: any = null;
 
