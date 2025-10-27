@@ -791,6 +791,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   */
 
+  // ============ DASHBOARD ROUTES ============
+
+  // Get dashboard data
+  app.get("/api/dashboard", async (req, res) => {
+    try {
+      const dashboard = await storage.getDashboardData();
+      res.json(dashboard);
+    } catch (error: any) {
+      console.error("Dashboard error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ TASK ROUTES ============
+
+  // Get all tasks
+  app.get("/api/tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getTasks();
+      res.json(tasks);
+    } catch (error: any) {
+      console.error("Get tasks error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get single task
+  app.get("/api/tasks/:id", async (req, res) => {
+    try {
+      const task = await storage.getTask(req.params.id);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      res.json(task);
+    } catch (error: any) {
+      console.error("Get task error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create task
+  app.post("/api/tasks", async (req, res) => {
+    try {
+      const task = await storage.createTask(req.body);
+      res.json(task);
+    } catch (error: any) {
+      console.error("Create task error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update task
+  app.patch("/api/tasks/:id", async (req, res) => {
+    try {
+      const task = await storage.updateTask(req.params.id, req.body);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      res.json(task);
+    } catch (error: any) {
+      console.error("Update task error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete task
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteTask(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Delete task error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get pending tasks
+  app.get("/api/tasks/filter/pending", async (req, res) => {
+    try {
+      const tasks = await storage.getPendingTasks();
+      res.json(tasks);
+    } catch (error: any) {
+      console.error("Get pending tasks error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ TEMPLATE DATA ROUTES ============
+
+  // Load template data
+  app.post("/api/template/load", async (req, res) => {
+    try {
+      await storage.loadTemplateData();
+      res.json({ success: true, message: "Template data loaded successfully" });
+    } catch (error: any) {
+      console.error("Load template data error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Clear all data
+  app.post("/api/template/clear", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      res.json({ success: true, message: "All data cleared successfully" });
+    } catch (error: any) {
+      console.error("Clear data error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
