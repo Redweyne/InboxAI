@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SyncBanner } from "@/components/sync-banner";
+import Dashboard from "@/pages/dashboard";
 import Chat from "@/pages/chat";
 import Inbox from "@/pages/inbox";
 import Calendar from "@/pages/calendar";
@@ -17,7 +18,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Chat} />
+      <Route path="/" component={Dashboard} />
+      <Route path="/chat" component={Chat} />
       <Route path="/inbox" component={Inbox} />
       <Route path="/calendar" component={Calendar} />
       <Route path="/analytics" component={Analytics} />

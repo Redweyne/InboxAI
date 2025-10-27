@@ -1,4 +1,4 @@
-import { MessageSquare, Inbox, Calendar, BarChart3, Settings } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Inbox, Calendar, BarChart3, Settings } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import {
   Sidebar,
@@ -15,8 +15,13 @@ import {
 
 const menuItems = [
   {
-    title: "Chat",
+    title: "Dashboard",
     url: "/",
+    icon: LayoutDashboard,
+  },
+  {
+    title: "Chat",
+    url: "/chat",
     icon: MessageSquare,
   },
   {
