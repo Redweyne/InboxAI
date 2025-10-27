@@ -1,4 +1,6 @@
 [x] 1. Install the required packages
 [x] 2. Restart the workflow to see if the project is working
-[x] 3. Verify the project is working using the feedback tool
-[x] 4. Inform user the import is completed and they can start building, mark the import as completed using the complete_project_import tool
+[x] 3. Create and configure the PostgreSQL database
+[x] 4. Push database schema using npm run db:push
+[x] 5. Verify the project is working (dashboard loading correctly)
+[x] 6. Import migration completed - project ready for development
