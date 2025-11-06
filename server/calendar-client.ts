@@ -1,7 +1,9 @@
 // Google Calendar OAuth integration
 import { google } from 'googleapis';
+import { getCachedTokens } from './gmail-client';
 
-let cachedTokens: any = null;
+// Tokens are now managed by gmail-client.ts and stored in the database
+// This ensures both Gmail and Calendar use the same OAuth token
 
 function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -27,24 +29,27 @@ function getOAuth2Client() {
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
 
-export function setTokens(tokens: any) {
-  cachedTokens = tokens;
+export async function setTokens(tokens: any) {
+  // Tokens are managed centrally by gmail-client.ts
+  // This function is kept for backwards compatibility but is no longer needed
 }
 
-export function isAuthenticated() {
-  return cachedTokens !== null;
+export async function isAuthenticated() {
+  const tokens = await getCachedTokens();
+  return tokens !== null;
 }
 
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
 // Always call this function again to get a fresh client.
 export async function getUncachableGoogleCalendarClient() {
-  if (!cachedTokens) {
+  const tokens = await getCachedTokens();
+  if (!tokens) {
     throw new Error('Google Calendar not authenticated. Please authenticate first.');
   }
 
   const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials(cachedTokens);
+  oauth2Client.setCredentials(tokens);
 
   return google.calendar({ version: 'v3', auth: oauth2Client });
 }

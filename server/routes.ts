@@ -17,8 +17,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ OAUTH ROUTES ============
   
   // Check if user is authenticated
-  app.get("/api/auth/status", (req, res) => {
-    res.json({ authenticated: isAuthenticated() });
+  app.get("/api/auth/status", async (req, res) => {
+    res.json({ authenticated: await isAuthenticated() });
   });
   
   // Get OAuth URL
@@ -449,7 +449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/sync-all", async (req, res) => {
     try {
       // Check if authenticated
-      if (!isAuthenticated()) {
+      if (!(await isAuthenticated())) {
         return res.status(401).json({ 
           error: "Not authenticated",
           needsAuth: true 

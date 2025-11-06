@@ -138,6 +138,27 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
 export type InsertTask = z.infer<typeof insertTaskSchema>;
 export type Task = typeof tasks.$inferSelect;
 
+// OAuth tokens schema for persistent storage
+export const oauthTokens = pgTable("oauth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  provider: text("provider").notNull(), // 'google'
+  userId: text("user_id").default('default_user'), // For future multi-user support
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  tokenType: text("token_type"),
+  expiryDate: timestamp("expiry_date"),
+  scope: text("scope"),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+});
+
+export const insertOAuthTokenSchema = createInsertSchema(oauthTokens).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertOAuthToken = z.infer<typeof insertOAuthTokenSchema>;
+export type OAuthToken = typeof oauthTokens.$inferSelect;
+
 // Dashboard data interface
 export interface DashboardData {
   greeting: string;

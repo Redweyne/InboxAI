@@ -119,7 +119,7 @@ ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  
 async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
   try {
     const { isAuthenticated } = await import("./gmail-client");
-    if (!isAuthenticated()) {
+    if (!(await isAuthenticated())) {
       return {
         type: 'error',
         success: false,

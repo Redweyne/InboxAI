@@ -10,10 +10,13 @@ import {
   type Task,
   type InsertTask,
   type DashboardData,
+  type OAuthToken,
+  type InsertOAuthToken,
   emails,
   calendarEvents,
   chatMessages,
   tasks,
+  oauthTokens,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { neon } from "@neondatabase/serverless";
@@ -61,6 +64,11 @@ export interface IStorage {
 
   // Dashboard
   getDashboardData(): Promise<DashboardData>;
+  
+  // OAuth token operations
+  saveOAuthToken(token: InsertOAuthToken): Promise<OAuthToken>;
+  getOAuthToken(provider: string, userId?: string): Promise<OAuthToken | undefined>;
+  deleteOAuthToken(provider: string, userId?: string): Promise<boolean>;
   
   // Template data
   loadTemplateData(): Promise<void>;
@@ -484,6 +492,31 @@ export class MemStorage implements IStorage {
       topPriorityTasks: pendingTasks.filter(t => t.priority === 'high').slice(0, 5),
       insights,
     };
+  }
+
+  // OAuth token operations (in-memory)
+  private oauthTokens: Map<string, OAuthToken> = new Map();
+
+  async saveOAuthToken(token: InsertOAuthToken): Promise<OAuthToken> {
+    const key = `${token.provider}_${token.userId || 'default_user'}`;
+    const savedToken: OAuthToken = {
+      id: randomUUID(),
+      ...token,
+      userId: token.userId || 'default_user',
+      updatedAt: new Date(),
+    };
+    this.oauthTokens.set(key, savedToken);
+    return savedToken;
+  }
+
+  async getOAuthToken(provider: string, userId: string = 'default_user'): Promise<OAuthToken | undefined> {
+    const key = `${provider}_${userId}`;
+    return this.oauthTokens.get(key);
+  }
+
+  async deleteOAuthToken(provider: string, userId: string = 'default_user'): Promise<boolean> {
+    const key = `${provider}_${userId}`;
+    return this.oauthTokens.delete(key);
   }
 
   // Template data loader
@@ -1183,6 +1216,75 @@ export class DbStorage implements IStorage {
       topPriorityTasks: pendingTasks.filter(t => t.priority === 'high').slice(0, 5),
       insights,
     };
+  }
+
+  // OAuth token operations (database-backed)
+  async saveOAuthToken(token: InsertOAuthToken): Promise<OAuthToken> {
+    const userId = token.userId || 'default_user';
+    
+    // Check if token already exists
+    const existing = await this.db
+      .select()
+      .from(oauthTokens)
+      .where(
+        and(
+          eq(oauthTokens.provider, token.provider),
+          eq(oauthTokens.userId, userId)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing token
+      const updated = await this.db
+        .update(oauthTokens)
+        .set({
+          ...token,
+          userId,
+          updatedAt: new Date(),
+        })
+        .where(eq(oauthTokens.id, existing[0].id))
+        .returning();
+      return updated[0];
+    } else {
+      // Insert new token
+      const inserted = await this.db
+        .insert(oauthTokens)
+        .values({
+          ...token,
+          userId,
+        })
+        .returning();
+      return inserted[0];
+    }
+  }
+
+  async getOAuthToken(provider: string, userId: string = 'default_user'): Promise<OAuthToken | undefined> {
+    const results = await this.db
+      .select()
+      .from(oauthTokens)
+      .where(
+        and(
+          eq(oauthTokens.provider, provider),
+          eq(oauthTokens.userId, userId)
+        )
+      )
+      .limit(1);
+    
+    return results[0];
+  }
+
+  async deleteOAuthToken(provider: string, userId: string = 'default_user'): Promise<boolean> {
+    const result = await this.db
+      .delete(oauthTokens)
+      .where(
+        and(
+          eq(oauthTokens.provider, provider),
+          eq(oauthTokens.userId, userId)
+        )
+      );
+    
+    return true;
   }
 
   // Template data loader - idempotent version that clears existing template data first
