@@ -6,7 +6,19 @@ let cachedTokens: any = null;
 function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const redirectUri = `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/api/auth/google/callback`;
+  
+  // Support both Replit and custom VPS domains
+  let redirectUri: string;
+  if (process.env.APP_URL) {
+    // Custom domain for VPS deployment (e.g., https://yourdomain.com)
+    redirectUri = `${process.env.APP_URL}/api/auth/google/callback`;
+  } else if (process.env.REPLIT_DEV_DOMAIN) {
+    // Replit development domain
+    redirectUri = `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`;
+  } else {
+    // Local development fallback
+    redirectUri = 'http://localhost:5000/api/auth/google/callback';
+  }
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your secrets.');
