@@ -152,31 +152,43 @@ GRANT ALL PRIVILEGES ON DATABASE inbox_ai TO inbox_user;
 1. In the search bar, type "Gmail API" → Click it → Click "Enable"
 2. In the search bar, type "Google Calendar API" → Click it → Click "Enable"
 
-#### 5.3 Create OAuth Credentials
-1. Go to "APIs & Services" → "Credentials"
-2. Click "Configure Consent Screen"
-   - User Type: **External** → Click "Create"
-   - App name: **Inbox AI**
-   - User support email: **Your email**
-   - Developer contact: **Your email**
-   - Click "Save and Continue"
-   - Scopes: Click "Save and Continue" (skip for now)
-   - Test users: Click "Save and Continue"
-   - Click "Back to Dashboard"
+#### 5.3 Configure OAuth Consent Screen (Do This FIRST!)
+**Important:** You must configure the consent screen BEFORE creating credentials.
 
-3. Click "Credentials" → "Create Credentials" → "OAuth 2.0 Client ID"
-   - Application type: **Web application**
-   - Name: **Inbox AI Web Client**
-   - Authorized redirect URIs: Click "Add URI"
-     - If using domain: `https://yourdomain.com/api/auth/google/callback`
-     - If using IP only: `http://YOUR_SERVER_IP/api/auth/google/callback`
-   - Click "Create"
+1. In the **left sidebar**, click **"OAuth consent screen"** (NOT in Credentials page)
+2. Choose **External** → Click **"Create"**
+3. Fill in the OAuth consent screen form:
+   - **App name:** Inbox AI
+   - **User support email:** Your email
+   - **Developer contact information:** Your email
+   - Click **"Save and Continue"**
+4. **Scopes page:** Click **"Save and Continue"** (don't add any scopes yet)
+5. **Test users page:** Click **"Save and Continue"** (you can add yourself later if needed)
+6. **Summary page:** Click **"Back to Dashboard"**
 
-4. **SAVE THESE!** You'll see:
-   - **Client ID:** (looks like: 123456789-abc.apps.googleusercontent.com)
-   - **Client Secret:** (looks like: GOCSPX-abc123...)
+✅ **Consent screen configured!**
 
-📝 **Save both in a notepad!**
+#### 5.4 Create OAuth Credentials (Do This SECOND!)
+Now that the consent screen is configured, create your credentials:
+
+1. In the **left sidebar**, click **"Credentials"**
+2. Click the blue **"+ Create credentials"** button at the top
+3. Select **"OAuth 2.0 Client ID"**
+4. **Application type:** Choose **Web application**
+5. **Name:** Inbox AI Web Client
+6. **Authorized redirect URIs:**
+   - Click **"+ Add URI"**
+   - Enter: `http://YOUR_SERVER_IP/api/auth/google/callback`
+   - **Replace YOUR_SERVER_IP** with your Contabo server IP (e.g., 123.45.67.89)
+   - Or if you have a domain: `https://yourdomain.com/api/auth/google/callback`
+7. Click **"Create"**
+
+#### 5.5 Save Your Credentials!
+A popup will appear with your credentials:
+- **Client ID:** (looks like: 123456789-abc.apps.googleusercontent.com)
+- **Client Secret:** (looks like: GOCSPX-abc123...)
+
+📝 **Copy BOTH and save them in a notepad!** You'll need these later.
 
 ---
 
