@@ -178,9 +178,23 @@ Now that the consent screen is configured, create your credentials:
 5. **Name:** Inbox AI Web Client
 6. **Authorized redirect URIs:**
    - Click **"+ Add URI"**
-   - Enter: `http://YOUR_SERVER_IP/api/auth/google/callback`
-   - **Replace YOUR_SERVER_IP** with your Contabo server IP (e.g., 123.45.67.89)
-   - Or if you have a domain: `https://yourdomain.com/api/auth/google/callback`
+   
+   **IMPORTANT:** Google OAuth does NOT accept IP addresses directly. Choose one option:
+   
+   **Option A - If you have a domain (e.g., from IONOS):**
+   - Enter: `https://yourdomain.com/api/auth/google/callback`
+   - Replace `yourdomain.com` with your actual domain
+   
+   **Option B - If using IP only (temporary solution):**
+   - Enter: `http://YOUR_SERVER_IP.nip.io/api/auth/google/callback`
+   - Replace YOUR_SERVER_IP with your Contabo IP (e.g., `http://149.102.143.10.nip.io/api/auth/google/callback`)
+   - nip.io is a free DNS service that makes your IP work like a domain
+   
+   **Option C - Get a free domain:**
+   - [FreeDNS](https://freedns.afraid.org/) or [DuckDNS](https://www.duckdns.org/)
+   - Point it to your VPS IP
+   - Use that domain here
+
 7. Click **"Create"**
 
 #### 5.5 Save Your Credentials!
@@ -430,6 +444,23 @@ Follow the prompts:
 
 ### Step 13: Point Your Domain to VPS (If Using Domain)
 
+**On IONOS:**
+1. Log in to [IONOS](https://www.ionos.com/)
+2. Go to **Domains & SSL** → Click on your domain
+3. Click **DNS** (or **Manage DNS Settings**)
+4. Add/Edit A Record for root domain:
+   - Type: `A`
+   - Host name: `@` (or leave blank)
+   - Points to: `YOUR_SERVER_IP` (e.g., 149.102.143.10)
+   - TTL: 3600 (or default)
+   - Click **Save**
+5. Add/Edit A Record for www subdomain:
+   - Type: `A`
+   - Host name: `www`
+   - Points to: `YOUR_SERVER_IP` (e.g., 149.102.143.10)
+   - TTL: 3600 (or default)
+   - Click **Save**
+
 **On Namecheap:**
 1. Log in → Domain List → Manage
 2. Advanced DNS
@@ -455,7 +486,7 @@ Follow the prompts:
    - IPv4: `YOUR_SERVER_IP`
    - Proxy: Orange cloud (enabled)
 
-⏱️ **Wait time:** 5 minutes to 24 hours for DNS propagation
+⏱️ **Wait time:** 5 minutes to 24 hours for DNS propagation (usually 5-15 minutes with IONOS)
 
 ---
 
