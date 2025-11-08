@@ -19,8 +19,8 @@ import {
   oauthTokens,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
@@ -834,11 +834,12 @@ export class MemStorage implements IStorage {
 export class DbStorage implements IStorage {
   private db;
 
-  constructor() {
-    const sql = neon(process.env.DATABASE_URL!);
-    this.db = drizzle(sql);
-  }
-
+constructor() {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+  this.db = drizzle(pool);
+}
   // Email operations
   async getEmails(): Promise<Email[]> {
     const result = await this.db.select().from(emails).orderBy(desc(emails.date));
