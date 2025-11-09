@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Settings as SettingsIcon, RefreshCw, Trash2, Mail, Calendar as CalendarIcon } from "lucide-react";
+import { Settings as SettingsIcon, RefreshCw, Trash2, Mail, Calendar as CalendarIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -90,6 +90,34 @@ export default function Settings() {
       toast({
         title: "Clear Failed",
         description: error.message || "Failed to clear chat",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const logout = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/auth/logout", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logged Out Successfully",
+        description: "Your Gmail account has been disconnected and all data has been cleared.",
+      });
+      // Invalidate all queries to clear cached data and refresh UI
+      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Logout Failed",
+        description: error.message || "Failed to logout",
         variant: "destructive",
       });
     },
@@ -186,6 +214,34 @@ export default function Settings() {
                   <RefreshCw className="h-4 w-4 mr-2" />
                 )}
                 Sync Calendar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Account</CardTitle>
+            <CardDescription>
+              Manage your connected Google account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium mb-1">Disconnect Gmail Account</h3>
+                <p className="text-sm text-muted-foreground">
+                  Remove your Gmail connection and clear all OAuth tokens
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => logout.mutate()}
+                disabled={logout.isPending}
+                data-testid="button-logout"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </CardContent>

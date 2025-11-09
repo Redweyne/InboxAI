@@ -60,6 +60,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).send(`Authentication failed: ${error.message}`);
     }
   });
+
+  // Logout - delete OAuth tokens and clear all synced data
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      // Delete OAuth token from database
+      await storage.deleteOAuthToken('google');
+      
+      // Clear all synced data (emails, calendar events, tasks, chat messages)
+      await storage.clearAllData();
+      
+      res.json({ 
+        success: true,
+        message: "Successfully logged out. All data has been cleared."
+      });
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
   
   // ============ EMAIL ROUTES ============
   
