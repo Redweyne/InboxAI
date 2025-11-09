@@ -22,7 +22,7 @@ sudo -u postgres psql
 ```sql
 \l
 ```
-Look for `inbox_ai` database.
+Look for `InboxAI` database.
 
 ```sql
 \du
@@ -31,15 +31,15 @@ Look for `inbox_user`.
 
 ### Step 3: Drop and recreate (clean slate)
 ```sql
-DROP DATABASE IF EXISTS inbox_ai;
+DROP DATABASE IF EXISTS InboxAI;
 DROP USER IF EXISTS inbox_user;
 ```
 
 ### Step 4: Create fresh database and user
 ```sql
 CREATE USER inbox_user WITH PASSWORD 'SecurePassword123!';
-CREATE DATABASE inbox_ai OWNER inbox_user;
-GRANT ALL PRIVILEGES ON DATABASE inbox_ai TO inbox_user;
+CREATE DATABASE InboxAI OWNER inbox_user;
+GRANT ALL PRIVILEGES ON DATABASE InboxAI TO inbox_user;
 \q
 ```
 
@@ -57,7 +57,7 @@ nano .env
 Update the DATABASE_URL line with the EXACT password you just set:
 
 ```bash
-DATABASE_URL=postgresql://inbox_user:SecurePassword123!@localhost:5432/inbox_ai
+DATABASE_URL=postgresql://inbox_user:SecurePassword123!@localhost:5432/InboxAI
 ```
 
 **Replace `SecurePassword123!` with your actual password.**
@@ -70,7 +70,7 @@ Save: Ctrl+X, Y, Enter
 
 ```bash
 # Test if you can connect with the new credentials
-psql "postgresql://inbox_user:SecurePassword123!@localhost:5432/inbox_ai"
+psql "postgresql://inbox_user:SecurePassword123!@localhost:5432/InboxAI"
 ```
 
 If it connects, type `\q` to exit.

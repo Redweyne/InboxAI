@@ -44,7 +44,7 @@
 
 3. **PostgreSQL Database**
    - Install on your IONOS VPS
-   - Create database: `inbox_ai`
+   - Create database: `InboxAI`
    - Required: `DATABASE_URL`
 
 4. **Domain/Server Configuration**

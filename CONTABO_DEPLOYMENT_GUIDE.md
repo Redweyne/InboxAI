@@ -128,9 +128,9 @@ sudo -u postgres psql
 You're now in the PostgreSQL shell. Run these commands:
 
 ```sql
-CREATE DATABASE inbox_ai;
+CREATE DATABASE InboxAI;
 CREATE USER inbox_user WITH ENCRYPTED PASSWORD 'ChangeThisToASecurePassword123!';
-GRANT ALL PRIVILEGES ON DATABASE inbox_ai TO inbox_user;
+GRANT ALL PRIVILEGES ON DATABASE InboxAI TO inbox_user;
 \q
 ```
 
@@ -277,7 +277,7 @@ APP_URL=http://YOUR_SERVER_IP
 # If you have a domain: APP_URL=https://yourdomain.com
 
 # Database - use the password you created in Step 4
-DATABASE_URL=postgresql://inbox_user:ChangeThisToASecurePassword123!@localhost:5432/inbox_ai
+DATABASE_URL=postgresql://inbox_user:ChangeThisToASecurePassword123!@localhost:5432/InboxAI
 
 # Google OAuth - paste from Step 5
 GOOGLE_CLIENT_ID=your_client_id_here
@@ -611,7 +611,7 @@ systemctl status postgresql
 
 **Test database connection:**
 ```bash
-psql -U inbox_user -d inbox_ai
+psql -U inbox_user -d InboxAI
 # Enter password when prompted
 # Type \q to exit
 ```
@@ -706,12 +706,12 @@ pm2 restart inbox-ai
 
 Create a backup:
 ```bash
-pg_dump -U inbox_user inbox_ai > /root/backup_$(date +%Y%m%d).sql
+pg_dump -U inbox_user InboxAI > /root/backup_$(date +%Y%m%d).sql
 ```
 
 Restore from backup:
 ```bash
-psql -U inbox_user inbox_ai < /root/backup_20250108.sql
+psql -U inbox_user InboxAI < /root/backup_20250108.sql
 ```
 
 ---
@@ -727,7 +727,7 @@ psql -U inbox_user inbox_ai < /root/backup_20250108.sql
    ```bash
    crontab -e
    # Add this line to backup daily at 2 AM:
-   0 2 * * * pg_dump -U inbox_user inbox_ai > /root/backups/backup_$(date +\%Y\%m\%d).sql
+   0 2 * * * pg_dump -U inbox_user InboxAI > /root/backups/backup_$(date +\%Y\%m\%d).sql
    ```
 
 3. **Monitor Uptime**

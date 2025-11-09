@@ -7,7 +7,7 @@ You'll need to set these on your IONOS VPS:
 
 #### Database (PostgreSQL)
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/inbox_ai
+DATABASE_URL=postgresql://username:password@localhost:5432/InboxAI
 ```
 
 #### Google OAuth (Gmail & Calendar)
@@ -68,9 +68,9 @@ PORT=5000
 
 2. Create database and user:
    ```sql
-   CREATE DATABASE inbox_ai;
+   CREATE DATABASE InboxAI;
    CREATE USER inbox_user WITH ENCRYPTED PASSWORD 'your_secure_password';
-   GRANT ALL PRIVILEGES ON DATABASE inbox_ai TO inbox_user;
+   GRANT ALL PRIVILEGES ON DATABASE InboxAI TO inbox_user;
    \q
    ```
 
@@ -111,7 +111,7 @@ PORT=5000
    NODE_ENV=production
    PORT=5000
    APP_URL=https://yourdomain.com
-   DATABASE_URL=postgresql://inbox_user:your_secure_password@localhost:5432/inbox_ai
+   DATABASE_URL=postgresql://inbox_user:your_secure_password@localhost:5432/InboxAI
    GOOGLE_CLIENT_ID=your_google_client_id
    GOOGLE_CLIENT_SECRET=your_google_client_secret
    GEMINI_API_KEY=your_gemini_api_key
@@ -236,7 +236,7 @@ pm2 restart inbox-ai
 
 ### Database Backup
 ```bash
-pg_dump -U inbox_user inbox_ai > backup_$(date +%Y%m%d).sql
+pg_dump -U inbox_user InboxAI > backup_$(date +%Y%m%d).sql
 ```
 
 ---
@@ -251,7 +251,7 @@ pg_dump -U inbox_user inbox_ai > backup_$(date +%Y%m%d).sql
 ### Issue: Database connection failed
 - Verify PostgreSQL is running: `systemctl status postgresql`
 - Check DATABASE_URL format
-- Test connection: `psql -U inbox_user -d inbox_ai`
+- Test connection: `psql -U inbox_user -d InboxAI`
 
 ### Issue: Application not starting
 - Check logs: `pm2 logs inbox-ai`
