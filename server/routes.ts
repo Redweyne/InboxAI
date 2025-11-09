@@ -68,17 +68,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const gmail = await getUncachableGmailClient();
       
-      // Fetch recent emails (last 50)
+      // Fetch recent emails (last 100)
       const response = await gmail.users.messages.list({
         userId: "me",
-        maxResults: 50,
+        maxResults: 100,
       });
 
       const messages = response.data.messages || [];
       const syncedEmails = [];
 
-      // Process each message
-      for (const message of messages.slice(0, 20)) { // Limit to 20 for performance
+      // Process each message (up to 100 emails)
+      for (const message of messages.slice(0, 100)) {
         try {
           const fullMessage = await gmail.users.messages.get({
             userId: "me",
@@ -460,13 +460,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const gmail = await getUncachableGmailClient();
       const emailResponse = await gmail.users.messages.list({
         userId: "me",
-        maxResults: 20,
+        maxResults: 100,
       });
 
       const messages = emailResponse.data.messages || [];
       let emailCount = 0;
 
-      for (const message of messages) {
+      for (const message of messages.slice(0, 100)) {
         try {
           const fullMessage = await gmail.users.messages.get({
             userId: "me",

@@ -18,6 +18,7 @@ export default function Settings() {
         description: `Synced ${data.emailCount} emails and ${data.eventCount} calendar events`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
@@ -41,6 +42,7 @@ export default function Settings() {
         description: `Synced ${data.count} emails from Gmail`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
     },
     onError: (error: any) => {
