@@ -834,12 +834,12 @@ export class MemStorage implements IStorage {
 export class DbStorage implements IStorage {
   private db;
 
-constructor() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
-  this.db = drizzle(pool);
-}
+  constructor() {
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
+    this.db = drizzle(pool);
+  }
   // Email operations
   async getEmails(): Promise<Email[]> {
     const result = await this.db.select().from(emails).orderBy(desc(emails.date));
