@@ -28,5 +28,5 @@
 [x] 28. Fresh import to Replit environment - NPM dependencies installed and workflow restarted successfully
 [x] 29. Application verified running on port 5000 with all API endpoints responding correctly
 [x] 30. Import process completed - Project ready for development and deployment
-[x] 31. Diagnosed redweyne.com deployment issues - Missing API credentials causing Google OAuth and Gemini AI failures
-[x] 32. Created REDWEYNE_FIX_GUIDE.md with step-by-step instructions to configure environment variables on VPS
+[x] 31. Diagnosed redweyne.com deployment issues - API keys exist but Google APIs not enabled in Cloud Console
+[x] 32. Created VPS_GOOGLE_API_FIX.md - Real fix: Enable Gmail/Calendar/Gemini APIs and verify redirect URI
