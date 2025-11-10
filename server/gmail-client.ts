@@ -111,3 +111,14 @@ export async function getUncachableGmailClient() {
 
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
+
+export async function getUserEmail(): Promise<string | null> {
+  try {
+    const gmail = await getUncachableGmailClient();
+    const profile = await gmail.users.getProfile({ userId: 'me' });
+    return profile.data.emailAddress || null;
+  } catch (error) {
+    console.error('Failed to fetch user email:', error);
+    return null;
+  }
+}

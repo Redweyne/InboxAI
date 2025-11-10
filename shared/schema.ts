@@ -163,6 +163,7 @@ export type OAuthToken = typeof oauthTokens.$inferSelect;
 export interface DashboardData {
   greeting: string;
   date: string;
+  userEmail?: string;
   summary: {
     urgentEmails: number;
     unreadEmails: number;

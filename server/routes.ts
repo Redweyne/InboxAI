@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated } from "./gmail-client";
+import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated, getUserEmail } from "./gmail-client";
 import { getUncachableGoogleCalendarClient, setTokens as setCalendarTokens } from "./calendar-client";
 import {
   categorizeEmail,
@@ -816,7 +816,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard", async (req, res) => {
     try {
       const dashboard = await storage.getDashboardData();
-      res.json(dashboard);
+      
+      // Fetch user email if authenticated
+      let userEmail: string | undefined;
+      if (await isAuthenticated()) {
+        const email = await getUserEmail();
+        if (email) {
+          userEmail = email;
+        }
+      }
+      
+      res.json({ ...dashboard, userEmail });
     } catch (error: any) {
       console.error("Dashboard error:", error);
       res.status(500).json({ error: error.message });

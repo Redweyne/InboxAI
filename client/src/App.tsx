@@ -1,12 +1,16 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "./lib/queryClient";
+import { QueryClientProvider, useQuery, useMutation } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SyncBanner } from "@/components/sync-banner";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import type { DashboardData } from "@shared/schema";
 import Dashboard from "@/pages/dashboard";
 import Chat from "@/pages/chat";
 import Inbox from "@/pages/inbox";
@@ -29,6 +33,60 @@ function Router() {
   );
 }
 
+function AppHeader() {
+  const { toast } = useToast();
+  const { data: dashboard } = useQuery<DashboardData>({
+    queryKey: ["/api/dashboard"],
+  });
+
+  const logout = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/auth/logout", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Logged Out Successfully",
+        description: "Your Gmail account has been disconnected.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Logout Failed",
+        description: error.message || "Failed to logout",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="flex items-center justify-between gap-2 p-4">
+      <SidebarTrigger data-testid="button-sidebar-toggle" />
+      <div className="flex items-center gap-3">
+        {dashboard?.userEmail && (
+          <>
+            <span className="text-sm text-muted-foreground" data-testid="header-user-email">
+              {dashboard.userEmail}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logout.mutate()}
+              disabled={logout.isPending}
+              data-testid="button-logout-header"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </>
+        )}
+        <ThemeToggle />
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const style = {
     "--sidebar-width": "16rem",
@@ -43,10 +101,7 @@ export default function App() {
             <AppSidebar />
             <div className="flex flex-col flex-1 overflow-hidden">
               <header className="border-b border-border bg-background">
-                <div className="flex items-center justify-between gap-2 p-4">
-                  <SidebarTrigger data-testid="button-sidebar-toggle" />
-                  <ThemeToggle />
-                </div>
+                <AppHeader />
                 <SyncBanner />
               </header>
               <main className="flex-1 overflow-hidden">

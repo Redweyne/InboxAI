@@ -132,6 +132,11 @@ export default function Dashboard() {
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white" data-testid="dashboard-greeting">
             {dashboard.greeting}! 👋
           </h1>
+          {dashboard.userEmail && (
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1" data-testid="dashboard-user-email">
+              {dashboard.userEmail}
+            </p>
+          )}
           <p className="text-lg text-gray-600 dark:text-gray-400 mt-1" data-testid="dashboard-date">
             {dashboard.date}
           </p>
