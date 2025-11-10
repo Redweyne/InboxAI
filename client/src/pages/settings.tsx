@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { handleAuthenticationRetry } from "@/lib/auth-helper";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -20,15 +21,35 @@ export default function Settings() {
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Sync Failed",
-        description: error.message || "Failed to sync data",
-        variant: "destructive",
-      });
+    onError: async (error: any) => {
+      if (error.message?.includes("authenticated") || error.status === 401) {
+        await handleAuthenticationRetry({
+          onAuthSuccess: () => {
+            toast({
+              title: "Authentication Successful",
+              description: "Syncing your data now...",
+            });
+            syncAll.mutate();
+          },
+          onAuthError: (authError) => {
+            toast({
+              title: "Authentication Failed",
+              description: authError.message || "Failed to authenticate with Google",
+              variant: "destructive",
+            });
+          },
+        });
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: error.message || "Failed to sync data",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -43,14 +64,34 @@ export default function Settings() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Email Sync Failed",
-        description: error.message || "Failed to sync emails",
-        variant: "destructive",
-      });
+    onError: async (error: any) => {
+      if (error.message?.includes("authenticated") || error.status === 401) {
+        await handleAuthenticationRetry({
+          onAuthSuccess: () => {
+            toast({
+              title: "Authentication Successful",
+              description: "Syncing emails now...",
+            });
+            syncEmails.mutate();
+          },
+          onAuthError: (authError) => {
+            toast({
+              title: "Authentication Failed",
+              description: authError.message || "Failed to authenticate with Google",
+              variant: "destructive",
+            });
+          },
+        });
+      } else {
+        toast({
+          title: "Email Sync Failed",
+          description: error.message || "Failed to sync emails",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -64,14 +105,35 @@ export default function Settings() {
         description: `Synced ${data.count} events from Google Calendar`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
     },
-    onError: (error: any) => {
-      toast({
-        title: "Calendar Sync Failed",
-        description: error.message || "Failed to sync calendar",
-        variant: "destructive",
-      });
+    onError: async (error: any) => {
+      if (error.message?.includes("authenticated") || error.status === 401) {
+        await handleAuthenticationRetry({
+          onAuthSuccess: () => {
+            toast({
+              title: "Authentication Successful",
+              description: "Syncing calendar now...",
+            });
+            syncCalendar.mutate();
+          },
+          onAuthError: (authError) => {
+            toast({
+              title: "Authentication Failed",
+              description: authError.message || "Failed to authenticate with Google",
+              variant: "destructive",
+            });
+          },
+        });
+      } else {
+        toast({
+          title: "Calendar Sync Failed",
+          description: error.message || "Failed to sync calendar",
+          variant: "destructive",
+        });
+      }
     },
   });
 

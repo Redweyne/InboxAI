@@ -3,6 +3,7 @@ import { RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { handleAuthenticationRetry } from "@/lib/auth-helper";
 import { useState, useEffect } from "react";
 import type { Email } from "@shared/schema";
 
@@ -35,36 +36,22 @@ export function SyncBanner() {
     onError: async (error: any) => {
       // Check if error is authentication related
       if (error.message?.includes("authenticated") || error.status === 401) {
-        // Get OAuth URL and open popup
-        try {
-          const authResponse = await apiRequest("GET", "/api/auth/google/url");
-          const authData = await authResponse.json();
-          const authWindow = window.open(
-            authData.url,
-            "Google Auth",
-            "width=600,height=600"
-          );
-          
-          // Listen for auth success
-          const handleMessage = (event: MessageEvent) => {
-            if (event.data.type === "gmail-auth-success") {
-              window.removeEventListener("message", handleMessage);
-              authWindow?.close();
-              toast({
-                title: "Authentication Successful",
-                description: "Please click Sync Now again to sync your data",
-              });
-            }
-          };
-          
-          window.addEventListener("message", handleMessage);
-        } catch (authError: any) {
-          toast({
-            title: "Authentication Failed",
-            description: authError.message || "Failed to authenticate with Google",
-            variant: "destructive",
-          });
-        }
+        await handleAuthenticationRetry({
+          onAuthSuccess: () => {
+            toast({
+              title: "Authentication Successful",
+              description: "Syncing your emails and calendar now...",
+            });
+            syncAll.mutate();
+          },
+          onAuthError: (authError) => {
+            toast({
+              title: "Authentication Failed",
+              description: authError.message || "Failed to authenticate with Google",
+              variant: "destructive",
+            });
+          },
+        });
       } else {
         toast({
           title: "Sync Failed",
