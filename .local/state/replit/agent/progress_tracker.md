@@ -94,3 +94,8 @@
 [x] 94. Created MANUAL_UPDATE_GUIDE.md - Explains server vs client file updates and provides exact code to paste
 [x] 95. User can fix duplicate email errors by updating server files only
 [x] 96. Logout button requires rebuilding frontend on development machine and uploading to VPS
+[x] 97. User deployed to fresh VPS - Google OAuth login failing with 400 error
+[x] 98. FOUND BUG - getOAuth2Client() hardcoded redirect URI instead of using GOOGLE_REDIRECT_URI from .env
+[x] 99. Fixed gmail-client.ts to respect GOOGLE_REDIRECT_URI environment variable
+[x] 100. Fixed calendar-client.ts to respect GOOGLE_REDIRECT_URI environment variable
+[x] 101. Verified no LSP errors - All code is clean and ready for deployment
