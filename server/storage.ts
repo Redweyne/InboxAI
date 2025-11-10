@@ -864,8 +864,30 @@ export class DbStorage implements IStorage {
       id,
       date: insertEmail.date || new Date(),
     };
-    await this.db.insert(emails).values(email);
-    return email;
+    
+    const result = await this.db.insert(emails)
+      .values(email)
+      .onConflictDoUpdate({
+        target: emails.messageId,
+        set: {
+          threadId: email.threadId,
+          subject: email.subject,
+          from: email.from,
+          to: email.to,
+          snippet: email.snippet,
+          body: email.body,
+          date: email.date,
+          isRead: email.isRead,
+          isStarred: email.isStarred,
+          category: email.category,
+          isUrgent: email.isUrgent,
+          labels: email.labels,
+          attachmentCount: email.attachmentCount,
+        }
+      })
+      .returning();
+    
+    return result[0];
   }
 
   async updateEmail(id: string, updates: Partial<Email>): Promise<Email | undefined> {
@@ -907,8 +929,27 @@ export class DbStorage implements IStorage {
   async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
     const id = randomUUID();
     const event: CalendarEvent = { ...insertEvent, id };
-    await this.db.insert(calendarEvents).values(event);
-    return event;
+    
+    const result = await this.db.insert(calendarEvents)
+      .values(event)
+      .onConflictDoUpdate({
+        target: calendarEvents.eventId,
+        set: {
+          summary: event.summary,
+          description: event.description,
+          location: event.location,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          attendees: event.attendees,
+          organizer: event.organizer,
+          status: event.status,
+          isAllDay: event.isAllDay,
+          colorId: event.colorId,
+        }
+      })
+      .returning();
+    
+    return result[0];
   }
 
   async updateCalendarEvent(id: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent | undefined> {
