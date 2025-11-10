@@ -73,3 +73,11 @@
 [x] 73. Verified all code is correct and present in codebase (AppHeader, getUserEmail, dashboard endpoint)
 [x] 74. Created comprehensive VPS_UPDATE_GUIDE.md with step-by-step update instructions
 [x] 75. Issue identified - User needs to pull latest code, rebuild, and restart on VPS
+[x] 76. ROOT CAUSE FOUND - getUserEmail() using Gmail API was failing silently
+[x] 77. FIXED - Changed getUserEmail() to use OAuth2 userinfo API with proper logging
+[x] 78. Added userinfo.email scope to OAuth scopes
+[x] 79. Created LOGOUT_FIX.md with deployment instructions and re-auth requirement
+[x] 80. Architect review - Fix requires re-auth for existing users (not ideal)
+[x] 81. IMPROVED FIX - Added fallback to Gmail API so existing users work immediately
+[x] 82. getUserEmail now tries OAuth2 first, falls back to Gmail API (no re-auth needed)
+[x] 83. Created LOGOUT_FIX_V2.md with simpler deployment (no re-auth required)

@@ -13,7 +13,11 @@ const CALENDAR_SCOPES = [
   'https://www.googleapis.com/auth/calendar',
 ];
 
-const ALL_SCOPES = [...GMAIL_SCOPES, ...CALENDAR_SCOPES];
+const USERINFO_SCOPE = [
+  'https://www.googleapis.com/auth/userinfo.email',
+];
+
+const ALL_SCOPES = [...GMAIL_SCOPES, ...CALENDAR_SCOPES, ...USERINFO_SCOPE];
 
 function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -114,11 +118,45 @@ export async function getUncachableGmailClient() {
 
 export async function getUserEmail(): Promise<string | null> {
   try {
-    const gmail = await getUncachableGmailClient();
-    const profile = await gmail.users.getProfile({ userId: 'me' });
-    return profile.data.emailAddress || null;
-  } catch (error) {
-    console.error('Failed to fetch user email:', error);
+    const tokens = await getCachedTokens();
+    if (!tokens || !tokens.access_token) {
+      console.log('[getUserEmail] No tokens found');
+      return null;
+    }
+
+    const oauth2Client = getOAuth2Client();
+    oauth2Client.setCredentials(tokens);
+    
+    // Try OAuth2 userinfo first (works for new users with userinfo.email scope)
+    try {
+      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+      const userInfo = await oauth2.userinfo.get();
+      
+      if (userInfo.data.email) {
+        console.log('[getUserEmail] Successfully fetched email from OAuth2 userinfo');
+        return userInfo.data.email;
+      }
+    } catch (oauthError: any) {
+      console.log('[getUserEmail] OAuth2 userinfo failed, trying Gmail API fallback:', oauthError.message);
+    }
+    
+    // Fallback to Gmail API (works for existing users without userinfo scope)
+    try {
+      const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+      const profile = await gmail.users.getProfile({ userId: 'me' });
+      
+      if (profile.data.emailAddress) {
+        console.log('[getUserEmail] Successfully fetched email from Gmail API');
+        return profile.data.emailAddress;
+      }
+    } catch (gmailError: any) {
+      console.error('[getUserEmail] Gmail API also failed:', gmailError.message);
+    }
+    
+    console.log('[getUserEmail] All methods failed to fetch email');
+    return null;
+  } catch (error: any) {
+    console.error('[getUserEmail] Unexpected error:', error.message);
     return null;
   }
 }
