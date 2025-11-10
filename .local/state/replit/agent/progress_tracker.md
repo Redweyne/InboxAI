@@ -69,3 +69,7 @@
 [x] 69. Workflow restarted - Application now running successfully on port 5000
 [x] 70. Verified all API endpoints responding correctly (200 status codes)
 [x] 71. Migration to fresh Replit environment fully completed - All systems operational and ready for use
+[x] 72. User reported logout button and email display not working on VPS deployment  
+[x] 73. Verified all code is correct and present in codebase (AppHeader, getUserEmail, dashboard endpoint)
+[x] 74. Created comprehensive VPS_UPDATE_GUIDE.md with step-by-step update instructions
+[x] 75. Issue identified - User needs to pull latest code, rebuild, and restart on VPS
