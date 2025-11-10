@@ -85,3 +85,7 @@
 [x] 85. Workflow configured with webview output on port 5000 - Application running successfully
 [x] 86. Verified all API endpoints responding correctly (200 status codes)
 [x] 87. Migration to fresh Replit environment fully completed - All systems operational and ready for use
+[x] 88. User reported VPS issues - Duplicate email errors and no logout button
+[x] 89. Verified both fixes are in Replit codebase (onConflictDoUpdate + getUserEmail fallback)
+[x] 90. Created VPS_UPDATE_FIX.md with comprehensive update instructions for VPS deployment
+[x] 91. User needs to pull latest code, rebuild, and restart PM2 on VPS to apply fixes
