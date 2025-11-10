@@ -26,6 +26,8 @@ export function SyncBanner() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/email"] });
       queryClient.invalidateQueries({ queryKey: ["/api/analytics/calendar"] });
       setDismissed(true);
