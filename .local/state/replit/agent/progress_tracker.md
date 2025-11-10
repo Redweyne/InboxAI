@@ -112,3 +112,8 @@
 [x] 112. Root cause found - GOOGLE_CLIENT_ID in .env had typos (0/o and 5/S character confusion)
 [x] 113. User corrected client ID to match Google Console exactly - OAuth now working perfectly
 [x] 114. OAuth 400 error fully resolved - User can now sync Gmail and Calendar successfully
+[x] 115. User reported sync, dashboard, and logout not working after loading template data
+[x] 116. Identified issue - template data conflicts with real Gmail sync causing mixed/corrupted state
+[x] 117. Updated /api/sync-all endpoint to automatically clear all data before syncing real Gmail/Calendar
+[x] 118. Created FIX_TEMPLATE_DATA_CONFLICT.md with deployment instructions
+[x] 119. Template data conflict fix completed - Sync now clears template data automatically

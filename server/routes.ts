@@ -503,6 +503,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      console.log('🔄 Starting sync-all - clearing any existing template data first');
+      
+      // Clear all existing data (including template data) before syncing
+      await storage.clearAllData();
+      console.log('✅ Cleared existing data');
+
       // Sync emails from Gmail
       const gmail = await getUncachableGmailClient();
       const emailResponse = await gmail.users.messages.list({
