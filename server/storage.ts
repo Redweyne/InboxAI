@@ -70,8 +70,7 @@ export interface IStorage {
   getOAuthToken(provider: string, userId?: string): Promise<OAuthToken | undefined>;
   deleteOAuthToken(provider: string, userId?: string): Promise<boolean>;
   
-  // Template data
-  loadTemplateData(): Promise<void>;
+  // Data management
   clearAllData(): Promise<void>;
 }
 

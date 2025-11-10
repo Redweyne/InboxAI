@@ -117,3 +117,11 @@
 [x] 117. Updated /api/sync-all endpoint to automatically clear all data before syncing real Gmail/Calendar
 [x] 118. Created FIX_TEMPLATE_DATA_CONFLICT.md with deployment instructions
 [x] 119. Template data conflict fix completed - Sync now clears template data automatically
+[x] 120. User requested complete removal of template data functionality and fix logout button visibility
+[x] 121. Removed /api/template/load endpoint and "Load Template Data" button from dashboard
+[x] 122. Renamed /api/template/clear to /api/data/clear for clarity
+[x] 123. Fixed logout button to show based on authentication status instead of userEmail availability
+[x] 124. Added authStatus query to App.tsx - logout button now always shows when authenticated
+[x] 125. Removed loadTemplateData from storage interface and cleaned up imports
+[x] 126. Created REMOVE_TEMPLATE_DATA.md with complete deployment instructions
+[x] 127. Template data fully removed and logout button visibility fixed - Ready for VPS deployment

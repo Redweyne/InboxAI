@@ -13,7 +13,6 @@ import {
   Clock,
   TrendingUp,
   Sparkles,
-  Database,
   Trash2,
   ExternalLink,
 } from "lucide-react";
@@ -28,22 +27,8 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard"],
   });
 
-  const loadTemplateMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/template/load"),
-    onSuccess: async () => {
-      toast({
-        title: "Template data loaded",
-        description: "Sample emails, events, and tasks have been loaded for testing.",
-      });
-      await queryClient.refetchQueries({ queryKey: ["/api/dashboard"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/emails"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/calendar/events"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-    },
-  });
-
   const clearDataMutation = useMutation({
-    mutationFn: () => apiRequest("POST", "/api/template/clear"),
+    mutationFn: () => apiRequest("POST", "/api/data/clear"),
     onSuccess: async () => {
       toast({
         title: "Data cleared",
@@ -142,15 +127,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={() => loadTemplateMutation.mutate()}
-            disabled={loadTemplateMutation.isPending}
-            variant="outline"
-            data-testid="button-load-template"
-          >
-            <Database className="w-4 h-4 mr-2" />
-            Load Template Data
-          </Button>
           <Button
             onClick={() => clearDataMutation.mutate()}
             disabled={clearDataMutation.isPending}

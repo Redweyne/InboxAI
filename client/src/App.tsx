@@ -39,6 +39,10 @@ function AppHeader() {
     queryKey: ["/api/dashboard"],
   });
 
+  const { data: authStatus } = useQuery<{ authenticated: boolean }>({
+    queryKey: ["/api/auth/status"],
+  });
+
   const logout = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", "/api/auth/logout", {});
@@ -50,6 +54,7 @@ function AppHeader() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
     },
     onError: (error: any) => {
       toast({
@@ -64,11 +69,13 @@ function AppHeader() {
     <div className="flex items-center justify-between gap-2 p-4">
       <SidebarTrigger data-testid="button-sidebar-toggle" />
       <div className="flex items-center gap-3">
-        {dashboard?.userEmail && (
+        {authStatus?.authenticated && (
           <>
-            <span className="text-sm text-muted-foreground" data-testid="header-user-email">
-              {dashboard.userEmail}
-            </span>
+            {dashboard?.userEmail && (
+              <span className="text-sm text-muted-foreground" data-testid="header-user-email">
+                {dashboard.userEmail}
+              </span>
+            )}
             <Button
               variant="ghost"
               size="sm"

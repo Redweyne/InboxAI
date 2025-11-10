@@ -944,21 +944,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ============ TEMPLATE DATA ROUTES ============
-
-  // Load template data
-  app.post("/api/template/load", async (req, res) => {
-    try {
-      await storage.loadTemplateData();
-      res.json({ success: true, message: "Template data loaded successfully" });
-    } catch (error: any) {
-      console.error("Load template data error:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // ============ DATA MANAGEMENT ROUTES ============
 
   // Clear all data
-  app.post("/api/template/clear", async (req, res) => {
+  app.post("/api/data/clear", async (req, res) => {
     try {
       await storage.clearAllData();
       res.json({ success: true, message: "All data cleared successfully" });
