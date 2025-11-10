@@ -21,12 +21,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ authenticated: await isAuthenticated() });
   });
   
+  // Debug endpoint to check OAuth configuration
+  app.get("/api/auth/debug", (req, res) => {
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
+      (process.env.APP_URL 
+        ? `${process.env.APP_URL}/api/auth/google/callback`
+        : process.env.REPLIT_DEV_DOMAIN
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`
+          : 'http://localhost:5000/api/auth/google/callback');
+    
+    res.json({
+      redirectUri,
+      hasClientId: !!process.env.GOOGLE_CLIENT_ID,
+      hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+      hasRedirectUriEnv: !!process.env.GOOGLE_REDIRECT_URI,
+      hasAppUrl: !!process.env.APP_URL,
+      environment: process.env.NODE_ENV,
+      instructions: [
+        '1. Copy the redirect URI above',
+        '2. Go to Google Cloud Console > Credentials > Your OAuth Client',
+        '3. Add it EXACTLY to "Authorized redirect URIs"',
+        '4. Wait 2-3 minutes for propagation',
+        '5. Try authentication again'
+      ]
+    });
+  });
+  
   // Get OAuth URL
   app.get("/api/auth/google/url", (req, res) => {
     try {
       const authUrl = getAuthUrl();
+      console.log('📤 Sending OAuth URL to client');
       res.json({ url: authUrl });
     } catch (error: any) {
+      console.error('❌ Failed to generate OAuth URL:', error);
       res.status(500).json({ error: error.message });
     }
   });

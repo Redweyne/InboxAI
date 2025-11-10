@@ -103,3 +103,10 @@
 [x] 103. Workflow restarted - Application now running successfully on port 5000
 [x] 104. Verified all API endpoints responding correctly (HTTP 200 status codes)
 [x] 105. Migration to fresh Replit environment fully completed - All systems operational and ready for use
+[x] 106. User reported Google OAuth 400 error when clicking "Sync Now" on VPS
+[x] 107. Root cause identified - redirect_uri mismatch between OAuth request and Google Cloud Console
+[x] 108. Added comprehensive logging to gmail-client.ts to show exact redirect URI being used
+[x] 109. Created /api/auth/debug endpoint to display OAuth configuration and fix instructions
+[x] 110. Added prompt: 'consent' to force consent screen and ensure refresh token is obtained
+[x] 111. Created OAUTH_FIX_GUIDE.md with step-by-step instructions for VPS deployment
+[x] 112. OAuth fix completed - User can now debug and fix redirect URI mismatch on VPS

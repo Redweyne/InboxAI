@@ -35,15 +35,26 @@ function getOAuth2Client() {
     throw new Error('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your secrets.');
   }
 
+  console.log('🔐 OAuth2 Client Configuration:');
+  console.log('   - Redirect URI:', redirectUri);
+  console.log('   - Client ID:', clientId?.substring(0, 20) + '...');
+
   return new google.auth.OAuth2(clientId, clientSecret, redirectUri);
 }
 
 export function getAuthUrl() {
   const oauth2Client = getOAuth2Client();
-  return oauth2Client.generateAuthUrl({
+  const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: ALL_SCOPES,
+    prompt: 'consent', // Force consent screen to ensure refresh token
   });
+  
+  console.log('🔗 Generated OAuth URL');
+  console.log('   - URL length:', authUrl.length);
+  console.log('   - Scopes:', ALL_SCOPES.join(', '));
+  
+  return authUrl;
 }
 
 export async function handleAuthCallback(code: string) {
