@@ -89,3 +89,8 @@
 [x] 89. Verified both fixes are in Replit codebase (onConflictDoUpdate + getUserEmail fallback)
 [x] 90. Created VPS_UPDATE_FIX.md with comprehensive update instructions for VPS deployment
 [x] 91. User needs to pull latest code, rebuild, and restart PM2 on VPS to apply fixes
+[x] 92. User is manually updating files with nano on VPS
+[x] 93. User discovered client files (App.tsx, dashboard.tsx) don't exist on VPS (they're compiled)
+[x] 94. Created MANUAL_UPDATE_GUIDE.md - Explains server vs client file updates and provides exact code to paste
+[x] 95. User can fix duplicate email errors by updating server files only
+[x] 96. Logout button requires rebuilding frontend on development machine and uploading to VPS
