@@ -60,3 +60,8 @@
 [x] 60. Workflow configured with webview output on port 5000 - Application running successfully
 [x] 61. Verified application responding with HTTP 200 - All API endpoints operational
 [x] 62. Migration to fresh Replit environment fully completed - All systems ready for use
+[x] 63. Diagnosed duplicate message_id database constraint violations preventing email sync
+[x] 64. Fixed createEmail() to use onConflictDoUpdate - Properly handles duplicates and updates metadata
+[x] 65. Fixed createCalendarEvent() to use onConflictDoUpdate - Handles duplicate event_ids correctly
+[x] 66. Architect review completed - Upsert logic approved with Pass rating, VPS-deployment ready
+[x] 67. Duplicate email/event handling fix completed - Email sync now works without constraint errors
