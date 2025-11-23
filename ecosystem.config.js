@@ -1,7 +1,7 @@
 module.exports = {
   apps: [{
     name: 'InboxAI',
-    script: 'dist/server/index.js',
+    script: 'dist/server/index.cjs',
     cwd: '/var/www/InboxAI',
     instances: 1,
     autorestart: true,
