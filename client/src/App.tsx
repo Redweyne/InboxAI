@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Router as WouterRouter } from "wouter";
 import { queryClient, apiRequest } from "./lib/queryClient";
 import { QueryClientProvider, useQuery, useMutation } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -21,15 +21,17 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/chat" component={Chat} />
-      <Route path="/inbox" component={Inbox} />
-      <Route path="/calendar" component={Calendar} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/settings" component={Settings} />
-      <Route component={NotFound} />
-    </Switch>
+    <WouterRouter base="/inboxai">
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/chat" component={Chat} />
+        <Route path="/inbox" component={Inbox} />
+        <Route path="/calendar" component={Calendar} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/settings" component={Settings} />
+        <Route component={NotFound} />
+      </Switch>
+    </WouterRouter>
   );
 }
 

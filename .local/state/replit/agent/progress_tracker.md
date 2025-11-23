@@ -142,3 +142,11 @@
 [x] 142. Workflow restarted - Application now running successfully on port 5000
 [x] 143. Verified all API endpoints responding correctly (HTTP 200 status codes)
 [x] 144. Migration to fresh Replit environment fully completed - All systems operational and ready for use
+[x] 145. User requested moving InboxAI from redweyne.com (root) to redweyne.com/inboxai (subpath)
+[x] 146. Researched Vite subpath deployment, Nginx reverse proxy configuration, and OAuth redirect URI updates
+[x] 147. Created comprehensive MOVE_TO_SUBPATH_GUIDE.md with step-by-step instructions
+[x] 148. Guide includes: Vite config changes, Wouter router updates, Nginx config, OAuth updates, and full testing plan
+[x] 149. Updated vite.config.ts - Added base: '/inboxai/' for subpath deployment
+[x] 150. Updated client/src/App.tsx - Wrapped routes with WouterRouter base="/inboxai"
+[x] 151. Built application successfully - All assets correctly prefixed with /inboxai/
+[x] 152. Code changes ready for deployment to VPS - User can follow MOVE_TO_SUBPATH_GUIDE.md
