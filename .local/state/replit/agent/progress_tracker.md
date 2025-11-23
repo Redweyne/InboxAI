@@ -167,3 +167,12 @@
 [x] 167. Build tested successfully - Shared code now properly bundled into dist/index.js
 [x] 168. Created comprehensive FIX_VPS_DEPLOYMENT.md with step-by-step deployment guide
 [x] 169. VPS deployment fix completed - All @shared imports now bundled, ready for deployment
+[x] 170. User reported esbuild config fix FAILED - Same directory import error persisting on VPS
+[x] 171. Called architect for deep debugging - Identified REAL root cause: dynamic imports in AI service files
+[x] 172. Architect found: Dynamic imports computing incorrect file:// URLs in production (file:///var/www/InboxAI/InboxAI)
+[x] 173. Fixed server/ai-service.ts - Replaced dynamic import of isAuthenticated with static import
+[x] 174. Fixed server/ai-actions.ts - Replaced dynamic imports of getCachedTokens, hasRequiredScopes, clearAuth with static imports
+[x] 175. Fixed server/routes.ts - Replaced dynamic imports of generateChatResponse and AI action functions with static imports
+[x] 176. Build tested successfully - All dynamic imports eliminated, production bundle clean
+[x] 177. Created FINAL_VPS_FIX.md - Complete deployment guide with root cause explanation and verification steps
+[x] 178. FINAL FIX COMPLETE - All dynamic imports replaced with static imports, ready for VPS deployment

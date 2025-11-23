@@ -11,6 +11,8 @@ import {
   processChatQuery,
   findFreeSlots,
 } from "./intelligence";
+import { generateChatResponse } from "./ai-service";
+import { executeSendEmail, executeEmailModify, executeCalendarAction } from "./ai-actions";
 import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -371,7 +373,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createChatMessage(userMessage);
 
       // Generate AI response using Gemini AI
-      const { generateChatResponse } = await import("./ai-service");
       const { response: responseContent, suggestions } = await generateChatResponse(content, true);
 
       // Save AI response
@@ -432,7 +433,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Missing required fields: to, subject, body" });
       }
 
-      const { executeSendEmail } = await import("./ai-actions");
       const result = await executeSendEmail({ type: 'send_email', to, subject, body, cc, bcc });
 
       res.json(result);
@@ -456,7 +456,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` });
       }
 
-      const { executeEmailModify } = await import("./ai-actions");
       const result = await executeEmailModify({ type: action as any, emailId });
 
       res.json(result);
@@ -480,7 +479,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` });
       }
 
-      const { executeCalendarAction } = await import("./ai-actions");
       const result = await executeCalendarAction({ type: action as any, eventData, eventId });
 
       res.json(result);

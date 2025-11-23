@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { storage } from "./storage";
 import { executeAIAction, type AIAction } from "./ai-actions";
+import { isAuthenticated } from "./gmail-client";
 
 // Blueprint integration reference: blueprint:javascript_gemini
 // Using Gemini 2.5 Flash for fast, free AI responses
@@ -118,7 +119,6 @@ ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  
 
 async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
   try {
-    const { isAuthenticated } = await import("./gmail-client");
     if (!(await isAuthenticated())) {
       return {
         type: 'error',

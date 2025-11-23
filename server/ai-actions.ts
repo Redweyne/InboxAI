@@ -1,4 +1,4 @@
-import { getUncachableGmailClient } from "./gmail-client";
+import { getUncachableGmailClient, getCachedTokens, hasRequiredScopes, clearAuth } from "./gmail-client";
 import { getUncachableGoogleCalendarClient } from "./calendar-client";
 import { storage } from "./storage";
 
@@ -147,7 +147,6 @@ export async function executeEmailModify(action: EmailModifyAction): Promise<{ s
 
 export async function executeCalendarAction(action: CalendarAction): Promise<{ success: boolean; eventId?: string; error?: string }> {
   try {
-    const { getCachedTokens, hasRequiredScopes, clearAuth } = await import("./gmail-client");
     const tokens = getCachedTokens();
     
     if (!hasRequiredScopes(tokens)) {
@@ -242,7 +241,6 @@ export async function executeCalendarAction(action: CalendarAction): Promise<{ s
     console.error('Error executing calendar action:', error);
     
     if (error.message?.includes('insufficient') || error.code === 403) {
-      const { clearAuth } = await import("./gmail-client");
       clearAuth();
       return {
         success: false,
