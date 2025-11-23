@@ -1,6 +1,6 @@
 // Google Calendar OAuth integration
 import { google } from 'googleapis';
-import { getCachedTokens } from './gmail-client';
+import { getCachedTokens } from './gmail-client.js';
 
 // Tokens are now managed by gmail-client.ts and stored in the database
 // This ensures both Gmail and Calendar use the same OAuth token

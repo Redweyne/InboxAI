@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated, getUserEmail } from "./gmail-client";
-import { getUncachableGoogleCalendarClient, setTokens as setCalendarTokens } from "./calendar-client";
+import { storage } from "./storage.js";
+import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated, getUserEmail } from "./gmail-client.js";
+import { getUncachableGoogleCalendarClient, setTokens as setCalendarTokens } from "./calendar-client.js";
 import {
   categorizeEmail,
   isEmailUrgent,
@@ -10,10 +10,10 @@ import {
   generateDraftResponse,
   processChatQuery,
   findFreeSlots,
-} from "./intelligence";
-import { generateChatResponse } from "./ai-service";
-import { executeSendEmail, executeEmailModify, executeCalendarAction } from "./ai-actions";
-import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "@shared/schema";
+} from "./intelligence.js";
+import { generateChatResponse } from "./ai-service.js";
+import { executeSendEmail, executeEmailModify, executeCalendarAction } from "./ai-actions.js";
+import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "../shared/schema.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ============ OAUTH ROUTES ============

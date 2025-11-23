@@ -1,7 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
-import { storage } from "./storage";
-import { executeAIAction, type AIAction } from "./ai-actions";
-import { isAuthenticated } from "./gmail-client";
+import { storage } from "./storage.js";
+import { executeAIAction, type AIAction } from "./ai-actions.js";
+import { isAuthenticated } from "./gmail-client.js";
 
 // Blueprint integration reference: blueprint:javascript_gemini
 // Using Gemini 2.5 Flash for fast, free AI responses

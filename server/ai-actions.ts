@@ -1,6 +1,6 @@
-import { getUncachableGmailClient, getCachedTokens, hasRequiredScopes, clearAuth } from "./gmail-client";
-import { getUncachableGoogleCalendarClient } from "./calendar-client";
-import { storage } from "./storage";
+import { getUncachableGmailClient, getCachedTokens, hasRequiredScopes, clearAuth } from "./gmail-client.js";
+import { getUncachableGoogleCalendarClient } from "./calendar-client.js";
+import { storage } from "./storage.js";
 
 export interface EmailAction {
   type: 'send_email';

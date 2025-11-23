@@ -1,5 +1,5 @@
 // Rule-based intelligence engine for email categorization and analysis
-import type { InsertEmail, DraftResponse, FreeTimeSlot } from "@shared/schema";
+import type { InsertEmail, DraftResponse, FreeTimeSlot } from "../shared/schema.js";
 
 // Categorize email based on sender, subject, and content
 export function categorizeEmail(from: string, subject: string, body: string): string {

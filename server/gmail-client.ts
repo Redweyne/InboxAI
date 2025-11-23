@@ -1,7 +1,7 @@
 // Gmail OAuth integration
 import { google } from 'googleapis';
-import { storage } from './storage';
-import type { InsertOAuthToken } from '@shared/schema';
+import { storage } from './storage.js';
+import type { InsertOAuthToken } from '../shared/schema.js';
 
 const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.modify',
