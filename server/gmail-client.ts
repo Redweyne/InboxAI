@@ -117,7 +117,12 @@ export async function getUncachableGmailClient() {
   }
 
   const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials(tokens);
+  oauth2Client.setCredentials({
+    ...tokens,
+    refresh_token: tokens.refresh_token ?? undefined,
+    token_type: tokens.token_type ?? undefined,
+    scope: tokens.scope ?? undefined,
+  });
 
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
@@ -131,7 +136,12 @@ export async function getUserEmail(): Promise<string | null> {
     }
 
     const oauth2Client = getOAuth2Client();
-    oauth2Client.setCredentials(tokens);
+    oauth2Client.setCredentials({
+      ...tokens,
+      refresh_token: tokens.refresh_token ?? undefined,
+      token_type: tokens.token_type ?? undefined,
+      scope: tokens.scope ?? undefined,
+    });
     
     // Try OAuth2 userinfo first (works for new users with userinfo.email scope)
     try {

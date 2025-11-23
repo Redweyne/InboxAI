@@ -44,7 +44,12 @@ export async function getUncachableGoogleCalendarClient() {
   }
 
   const oauth2Client = getOAuth2Client();
-  oauth2Client.setCredentials(tokens);
+  oauth2Client.setCredentials({
+    ...tokens,
+    refresh_token: tokens.refresh_token ?? undefined,
+    token_type: tokens.token_type ?? undefined,
+    scope: tokens.scope ?? undefined,
+  });
 
   return google.calendar({ version: 'v3', auth: oauth2Client });
 }

@@ -109,7 +109,7 @@ ${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  
     return {
       response: aiResponse,
       suggestions,
-      actionExecuted: actionResult,
+      actionExecuted: actionResult ?? undefined,
     };
   } catch (error) {
     console.error("AI Service Error:", error);

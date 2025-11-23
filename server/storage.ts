@@ -100,10 +100,22 @@ export class MemStorage implements IStorage {
 
   async createEmail(insertEmail: InsertEmail): Promise<Email> {
     const id = randomUUID();
-    const email: Email = { 
-      ...insertEmail, 
+    const email: Email = {
       id,
+      messageId: insertEmail.messageId,
+      threadId: insertEmail.threadId ?? null,
+      subject: insertEmail.subject,
+      from: insertEmail.from,
+      to: insertEmail.to,
+      snippet: insertEmail.snippet ?? null,
+      body: insertEmail.body ?? null,
       date: insertEmail.date || new Date(),
+      isRead: insertEmail.isRead ?? null,
+      isStarred: insertEmail.isStarred ?? null,
+      category: insertEmail.category,
+      isUrgent: insertEmail.isUrgent ?? null,
+      labels: insertEmail.labels ?? null,
+      attachmentCount: insertEmail.attachmentCount ?? null,
     };
     this.emails.set(id, email);
     return email;
@@ -153,7 +165,20 @@ export class MemStorage implements IStorage {
 
   async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
     const id = randomUUID();
-    const event: CalendarEvent = { ...insertEvent, id };
+    const event: CalendarEvent = {
+      id,
+      eventId: insertEvent.eventId,
+      summary: insertEvent.summary,
+      description: insertEvent.description ?? null,
+      location: insertEvent.location ?? null,
+      startTime: insertEvent.startTime,
+      endTime: insertEvent.endTime,
+      attendees: insertEvent.attendees ?? null,
+      organizer: insertEvent.organizer ?? null,
+      status: insertEvent.status ?? null,
+      isAllDay: insertEvent.isAllDay ?? null,
+      colorId: insertEvent.colorId ?? null,
+    };
     this.calendarEvents.set(id, event);
     return event;
   }
@@ -199,7 +224,9 @@ export class MemStorage implements IStorage {
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
     const message: ChatMessage = {
       id: randomUUID(),
-      ...insertMessage,
+      role: insertMessage.role,
+      content: insertMessage.content,
+      metadata: insertMessage.metadata ?? null,
       timestamp: new Date(),
     };
     this.chatMessages.push(message);
@@ -336,8 +363,15 @@ export class MemStorage implements IStorage {
   async createTask(insertTask: InsertTask): Promise<Task> {
     const id = randomUUID();
     const task: Task = {
-      ...insertTask,
       id,
+      title: insertTask.title,
+      description: insertTask.description ?? null,
+      priority: insertTask.priority,
+      status: insertTask.status,
+      category: insertTask.category ?? null,
+      dueDate: insertTask.dueDate ?? null,
+      relatedEmailId: insertTask.relatedEmailId ?? null,
+      relatedEventId: insertTask.relatedEventId ?? null,
       createdAt: new Date(),
       completedAt: insertTask.status === 'completed' ? new Date() : null,
     };
@@ -485,7 +519,7 @@ export class MemStorage implements IStorage {
         title: event.summary,
         startTime: new Date(event.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
         endTime: new Date(event.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        location: event.location,
+        location: event.location ?? undefined,
         attendees: event.attendees || [],
       })),
       topPriorityTasks: pendingTasks.filter(t => t.priority === 'high').slice(0, 5),
@@ -500,8 +534,13 @@ export class MemStorage implements IStorage {
     const key = `${token.provider}_${token.userId || 'default_user'}`;
     const savedToken: OAuthToken = {
       id: randomUUID(),
-      ...token,
+      provider: token.provider,
       userId: token.userId || 'default_user',
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken ?? null,
+      tokenType: token.tokenType ?? null,
+      expiryDate: token.expiryDate ?? null,
+      scope: token.scope ?? null,
       updatedAt: new Date(),
     };
     this.oauthTokens.set(key, savedToken);
@@ -859,9 +898,21 @@ export class DbStorage implements IStorage {
   async createEmail(insertEmail: InsertEmail): Promise<Email> {
     const id = randomUUID();
     const email: Email = {
-      ...insertEmail,
       id,
+      messageId: insertEmail.messageId,
+      threadId: insertEmail.threadId ?? null,
+      subject: insertEmail.subject,
+      from: insertEmail.from,
+      to: insertEmail.to,
+      snippet: insertEmail.snippet ?? null,
+      body: insertEmail.body ?? null,
       date: insertEmail.date || new Date(),
+      isRead: insertEmail.isRead ?? null,
+      isStarred: insertEmail.isStarred ?? null,
+      category: insertEmail.category,
+      isUrgent: insertEmail.isUrgent ?? null,
+      labels: insertEmail.labels ?? null,
+      attachmentCount: insertEmail.attachmentCount ?? null,
     };
     
     const result = await this.db.insert(emails)
@@ -927,7 +978,20 @@ export class DbStorage implements IStorage {
 
   async createCalendarEvent(insertEvent: InsertCalendarEvent): Promise<CalendarEvent> {
     const id = randomUUID();
-    const event: CalendarEvent = { ...insertEvent, id };
+    const event: CalendarEvent = {
+      id,
+      eventId: insertEvent.eventId,
+      summary: insertEvent.summary,
+      description: insertEvent.description ?? null,
+      location: insertEvent.location ?? null,
+      startTime: insertEvent.startTime,
+      endTime: insertEvent.endTime,
+      attendees: insertEvent.attendees ?? null,
+      organizer: insertEvent.organizer ?? null,
+      status: insertEvent.status ?? null,
+      isAllDay: insertEvent.isAllDay ?? null,
+      colorId: insertEvent.colorId ?? null,
+    };
     
     const result = await this.db.insert(calendarEvents)
       .values(event)
@@ -1257,7 +1321,7 @@ export class DbStorage implements IStorage {
         title: event.summary,
         startTime: new Date(event.startTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
         endTime: new Date(event.endTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        location: event.location,
+        location: event.location ?? undefined,
         attendees: event.attendees || [],
       })),
       topPriorityTasks: pendingTasks.filter(t => t.priority === 'high').slice(0, 5),
