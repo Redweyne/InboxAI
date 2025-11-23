@@ -154,3 +154,9 @@
 [x] 154. Workflow restarted - Application now running successfully on port 5000
 [x] 155. Verified all API endpoints responding correctly (HTTP 200 status codes)
 [x] 156. Migration to fresh Replit environment fully completed - All systems operational and ready for use
+[x] 157. User reported VPS subpath deployment broken - Module import error after moving to /inboxai
+[x] 158. Diagnosed issue - server/vite.ts importing vite.config at top level causing esbuild bundling error
+[x] 159. Fixed by converting to dynamic import - vite config only loaded when needed (dev mode)
+[x] 160. Build tested successfully - No errors, production bundle created correctly
+[x] 161. Created FIX_SUBPATH_VPS_ERROR.md with complete deployment instructions
+[x] 162. VPS subpath module import error fix completed - Ready for deployment
