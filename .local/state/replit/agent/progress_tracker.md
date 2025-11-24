@@ -219,3 +219,19 @@
 [x] 219. Build verified successful - Zero errors, zero dynamic imports, clean ESM output
 [x] 220. Created VPS_FINAL_FIX.md - Complete deployment guide with environment variables and verification steps
 [x] 221. VPS deployment fix completed - Ready for immediate deployment to redweyne.com/inboxai
+[x] 222. User identified client-side routing problem - URLs reverting to redweyne.com instead of staying at /inboxai
+[x] 223. Called architect for diagnosis - Found API calls using absolute paths without base path prefix
+[x] 224. Created client/src/lib/base-path.ts - Utility to prepend base path from import.meta.env.BASE_URL
+[x] 225. Updated client/src/lib/queryClient.ts - Modified apiRequest() and getQueryFn() to use withBasePath()
+[x] 226. Architect review #1 - Found missing absolute URL check and missing leading slash normalization
+[x] 227. Fixed withBasePath() - Added protocol check for http://, https://, // and URL normalization
+[x] 228. Architect review #2 - Found incorrect boundary check (would skip /inboxai-dashboard)
+[x] 229. Fixed boundary check - Changed to exact match or followed by / only
+[x] 230. Architect review #3 - Found missing query string and hash fragment handling
+[x] 231. Fixed query/hash handling - Added checks for ${basePath}? and ${basePath}#
+[x] 232. Architect review #4 - Found missing other URL schemes (mailto:, tel:, blob:, data:)
+[x] 233. Implemented comprehensive URL scheme detection - Regex pattern /^[a-z][a-z\d+\-.]*:/i
+[x] 234. Architect APPROVED implementation - Production-ready for VPS deployment
+[x] 235. Build verified successful - Zero errors, all edge cases handled
+[x] 236. Created VPS_CLIENT_ROUTING_FIX.md - Complete deployment guide with verification checklist
+[x] 237. CLIENT-SIDE ROUTING FIX COMPLETE - All navigation now respects /inboxai subpath
