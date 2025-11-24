@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && npm run build:server",
-    "build:server": "tsc -p tsconfig.server.json",
+    "build": "NODE_ENV=production vite build && npm run build:server",
+    "build:server": "NODE_ENV=production tsc -p tsconfig.server.json",
     "start": "NODE_ENV=production node dist/server/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push"
