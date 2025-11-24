@@ -24,6 +24,13 @@ function Router() {
   // In dev: "/" | In production: "/inboxai/"
   const basePath = import.meta.env.BASE_URL;
   
+  // CRITICAL DEBUG LOG - Check router base at runtime
+  if (typeof window !== 'undefined') {
+    console.log(
+      `[ROUTER DEBUG] BASE_URL from Vite: "${basePath}" | NODE_ENV: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
+    );
+  }
+  
   return (
     <WouterRouter base={basePath}>
       <Switch>

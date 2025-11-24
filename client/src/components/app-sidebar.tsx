@@ -43,6 +43,11 @@ const menuItems = [
 
 export function AppSidebar() {
   const [location] = useLocation();
+  
+  // DEBUG: Log navigation changes
+  if (typeof window !== 'undefined') {
+    console.log(`[NAV DEBUG] Current location: "${location}"`);
+  }
 
   return (
     <Sidebar>

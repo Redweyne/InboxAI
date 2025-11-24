@@ -74,21 +74,33 @@ export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
   const basePath = process.env.APP_BASE_PATH || '/inboxai';
 
+  console.log(`[SERVER DEBUG] APP_BASE_PATH: "${basePath}" | distPath: "${distPath}"`);
+
   if (!fs.existsSync(distPath)) {
     throw new Error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
 
+  // DEBUG: Log all requests to the base path
+  app.use((req, res, next) => {
+    if (req.path.startsWith(basePath)) {
+      console.log(`[STATIC DEBUG] ${req.method} ${req.path}`);
+    }
+    next();
+  });
+
   app.use(basePath, express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
   app.use(`${basePath}/*`, (_req, res) => {
+    console.log(`[ROUTER FALLBACK] Serving index.html for ${_req.path}`);
     res.sendFile(path.resolve(distPath, "index.html"));
   });
   
   // Redirect root to the app base path
   app.get('/', (_req, res) => {
+    console.log(`[SERVER DEBUG] Root redirect: / -> ${basePath}`);
     res.redirect(basePath);
   });
 }

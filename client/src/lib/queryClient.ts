@@ -13,13 +13,18 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(withBasePath(url), {
+  const finalUrl = withBasePath(url);
+  console.log(`[FETCH DEBUG] ${method} ${finalUrl}`);
+  const res = await fetch(finalUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
 
+  if (!res.ok) {
+    console.error(`[FETCH ERROR] ${method} ${finalUrl} returned ${res.status}`);
+  }
   await throwIfResNotOk(res);
   return res;
 }

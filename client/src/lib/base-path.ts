@@ -2,8 +2,18 @@
  * Get the base path for the application
  * This respects the Vite base config which is set to /inboxai/ for production
  * and / for development
+ * 
+ * DEBUG: On VPS, this should be "" (empty after removing trailing slash from "/inboxai/")
+ * In dev, this should be "" (empty after removing trailing slash from "/")
  */
 export const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// CRITICAL DEBUG: Log base path on initialization
+if (typeof window !== 'undefined') {
+  console.log(
+    `[BASE-PATH DEBUG] Vite BASE_URL: "${import.meta.env.BASE_URL}" | Calculated basePath: "${basePath}" | MODE: "${import.meta.env.MODE}"`
+  );
+}
 
 /**
  * Prepend base path to a URL
@@ -37,6 +47,10 @@ export function withBasePath(url: string): string {
     return normalizedUrl;
   }
   
-  // Otherwise, prepend base path
-  return `${basePath}${normalizedUrl}`;
+  const result = `${basePath}${normalizedUrl}`;
+  // DEBUG: Log API calls to verify path transformation
+  if (normalizedUrl.startsWith('/api/')) {
+    console.log(`[API DEBUG] Original: "${normalizedUrl}" -> Final: "${result}"`);
+  }
+  return result;
 }
