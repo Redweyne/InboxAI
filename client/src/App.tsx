@@ -20,8 +20,12 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  // Use the Vite BASE_URL for the router base
+  // In dev: "/" | In production: "/inboxai/"
+  const basePath = import.meta.env.BASE_URL;
+  
   return (
-    <WouterRouter base="/inboxai">
+    <WouterRouter base={basePath}>
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/chat" component={Chat} />
