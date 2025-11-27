@@ -4,10 +4,13 @@
 Inbox AI is a personal productivity assistant that helps you manage your Gmail inbox and Google Calendar with intelligent AI-powered insights. The application uses Google's Gemini AI to provide helpful responses about your emails, calendar, and schedule.
 
 ## Project Status
-**Last Updated:** October 27, 2025
+**Last Updated:** November 27, 2025
 **Status:** Production-Ready ✅
 
 ### Recent Changes
+- ✅ **VPS Subpath Deployment Fix** - API routes now support APP_BASE_PATH for subpath hosting
+- ✅ Fixed Express Router mounting to use dynamic base path (e.g., /inboxai/api)
+- ✅ OAuth redirect URIs now include base path for proper callback handling
 - ✅ Added Gemini AI integration for intelligent chat responses
 - ✅ Implemented AI-powered chat service with context awareness
 - ✅ Updated chat interface to display dynamic AI-generated suggestions
@@ -82,6 +85,24 @@ The application runs on port 5000 with:
 - Backend: Express server with hot reload via tsx
 
 Run: `npm run dev`
+
+## VPS Subpath Deployment
+
+For deploying to a subpath (e.g., `redweyne.com/InboxAI`), the application now supports the `APP_BASE_PATH` environment variable.
+
+### Required VPS Environment Variables
+```env
+APP_BASE_PATH=/inboxai
+APP_URL=https://redweyne.com
+GOOGLE_REDIRECT_URI=https://redweyne.com/inboxai/api/auth/google/callback
+```
+
+### How It Works
+- API routes are mounted at `${APP_BASE_PATH}/api` (e.g., `/inboxai/api`)
+- OAuth callbacks include the base path in the redirect URI
+- Client-side routing uses the same base path
+
+See `VPS_SUBPATH_API_FIX.md` for detailed deployment instructions.
 
 ## AI Capabilities
 The Gemini AI assistant can:
