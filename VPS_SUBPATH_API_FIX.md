@@ -1,16 +1,17 @@
-# VPS Subpath API Fix - Critical Update
+# VPS Subpath API Fix - Critical Update (CASE SENSITIVE!)
 
 ## Problem
 After migrating from `redweyne.com` to `redweyne.com/InboxAI`, the application showed only a skeleton page with non-functional buttons because:
 
-1. **API routes were not prefixed**: The server registered routes at `/api/...` but the client was calling `/inboxai/api/...`
-2. **All API requests returned 404**: Dashboard data, sync, authentication - everything failed
-3. **OAuth callback was broken**: Google redirected to `/inboxai/api/auth/google/callback` which didn't exist
+1. **CASE SENSITIVITY MISMATCH**: Vite config used `/inboxai/` (lowercase) but VPS URL uses `/InboxAI` (with capitals). Linux is case-sensitive!
+2. **Client-side routing broken**: Wouter router had base `/inboxai/` but actual URL was `/InboxAI`
+3. **All API requests returned 404**: Client called `/inboxai/api/...` but Nginx serves `/InboxAI/...`
+4. **OAuth callback was broken**: Redirect URI didn't match actual path
 
 ## Solution Applied
-- All API routes are now mounted under the base path using Express Router
-- The base path is read from `APP_BASE_PATH` environment variable
-- OAuth redirect URIs now include the base path
+- **Fixed Vite config** to use `/InboxAI/` (matching VPS URL exactly)
+- All API routes mount under `APP_BASE_PATH` using Express Router
+- OAuth redirect URIs now use the correct case `/InboxAI/`
 
 ## How to Deploy This Fix
 
@@ -31,17 +32,17 @@ npm run build
 
 ### Step 3: Update Your .env File
 
-Make sure your `.env` file has the correct configuration:
+**CRITICAL: Use `/InboxAI` with capital letters to match the URL!**
 
 ```env
-# CRITICAL: Set the base path for subpath deployment
-APP_BASE_PATH=/inboxai
+# CRITICAL: Set the base path for subpath deployment (CASE SENSITIVE!)
+APP_BASE_PATH=/InboxAI
 
 # App URL (without trailing slash, without the subpath)
 APP_URL=https://redweyne.com
 
-# OAuth Redirect URI (MUST include the full path with /inboxai)
-GOOGLE_REDIRECT_URI=https://redweyne.com/inboxai/api/auth/google/callback
+# OAuth Redirect URI (MUST include the full path with /InboxAI - capital letters!)
+GOOGLE_REDIRECT_URI=https://redweyne.com/InboxAI/api/auth/google/callback
 ```
 
 ### Step 4: Update Google Cloud Console
@@ -51,9 +52,13 @@ GOOGLE_REDIRECT_URI=https://redweyne.com/inboxai/api/auth/google/callback
 3. Click on your OAuth 2.0 Client ID
 4. Under **Authorized redirect URIs**, add:
    ```
-   https://redweyne.com/inboxai/api/auth/google/callback
+   https://redweyne.com/InboxAI/api/auth/google/callback
    ```
-5. Click **Save** and wait 2-3 minutes for changes to propagate
+5. **Remove the old lowercase URI** if present:
+   ```
+   https://redweyne.com/inboxai/api/auth/google/callback  <-- DELETE THIS
+   ```
+6. Click **Save** and wait 2-3 minutes for changes to propagate
 
 ### Step 5: Restart PM2
 
@@ -63,17 +68,23 @@ pm2 restart InboxAI
 
 ### Step 6: Verify the Fix
 
-1. Visit `https://redweyne.com/inboxai`
+1. Visit `https://redweyne.com/InboxAI`
 2. Open browser DevTools (F12) > Network tab
 3. Refresh the page
-4. You should see API calls going to `/inboxai/api/...` returning 200 status codes
+4. You should see API calls going to `/InboxAI/api/...` returning 200 status codes
 
 Check specifically:
-- `/inboxai/api/auth/status` - Should return `{"authenticated": true/false}`
-- `/inboxai/api/dashboard` - Should return dashboard data
-- `/inboxai/api/emails` - Should return emails array
+- `/InboxAI/api/auth/status` - Should return `{"authenticated": true/false}`
+- `/InboxAI/api/dashboard` - Should return dashboard data
+- `/InboxAI/api/emails` - Should return emails array
 
-### Step 7: Test OAuth
+### Step 7: Test Navigation
+
+1. Click on "Dashboard" in the sidebar
+2. URL should stay at `redweyne.com/InboxAI` (NOT change to `redweyne.com`)
+3. Click on "Chat", "Inbox", "Calendar" - all should stay under `/InboxAI/`
+
+### Step 8: Test OAuth
 
 1. Click "Sync Now" button
 2. Google OAuth popup should appear
@@ -84,20 +95,24 @@ Check specifically:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `APP_BASE_PATH` | The subpath where the app is hosted | `/inboxai` |
+| `APP_BASE_PATH` | The subpath where the app is hosted (CASE SENSITIVE!) | `/InboxAI` |
 | `APP_URL` | The base domain (no trailing slash) | `https://redweyne.com` |
-| `GOOGLE_REDIRECT_URI` | Full OAuth callback URL | `https://redweyne.com/inboxai/api/auth/google/callback` |
+| `GOOGLE_REDIRECT_URI` | Full OAuth callback URL (CASE SENSITIVE!) | `https://redweyne.com/InboxAI/api/auth/google/callback` |
 
 ## Troubleshooting
 
+### Navigation goes to root URL (redweyne.com instead of redweyne.com/InboxAI)
+- This was the case sensitivity bug - pull latest code and rebuild
+- Verify Vite config has `base: '/InboxAI/'` with correct case
+
 ### API calls still return 404
-- Verify `APP_BASE_PATH=/inboxai` is in your `.env`
+- Verify `APP_BASE_PATH=/InboxAI` is in your `.env` (capital letters!)
 - Restart PM2: `pm2 restart InboxAI`
 - Check logs: `pm2 logs InboxAI`
 
 ### OAuth returns error
-- Verify `GOOGLE_REDIRECT_URI` includes `/inboxai`
-- Check Google Cloud Console has the exact same redirect URI
+- Verify `GOOGLE_REDIRECT_URI` uses `/InboxAI` (capital letters!)
+- Check Google Cloud Console has the exact same redirect URI with same case
 - Wait 2-3 minutes after adding redirect URI
 
 ### Check server logs
@@ -107,6 +122,6 @@ pm2 logs InboxAI --lines 50
 
 You should see:
 ```
-Registering routes with base path: "/inboxai" (API at /inboxai/api/...)
-API routes mounted at: /inboxai/api
+Registering routes with base path: "/InboxAI" (API at /InboxAI/api/...)
+API routes mounted at: /InboxAI/api
 ```

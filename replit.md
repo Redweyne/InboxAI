@@ -88,39 +88,41 @@ Run: `npm run dev`
 
 ## VPS Subpath Deployment
 
-The application has been fixed to support deployment at a subpath (e.g., `redweyne.com/inboxai`).
+The application has been fixed to support deployment at a subpath (e.g., `redweyne.com/InboxAI`).
 
 ### Problem That Was Fixed (November 27, 2025)
-The application was showing skeleton UI with non-functional buttons when deployed to `/inboxai` subpath because:
-1. Client was calling `/inboxai/api/...` but server routes were at `/api/...` (404 errors)
-2. OAuth redirect URIs didn't include the base path
-3. All API endpoints failed, breaking authentication, sync, and data loading
+The application was showing skeleton UI with non-functional buttons when deployed to `/InboxAI` subpath because:
+1. **Case sensitivity mismatch**: Vite config used `/inboxai/` but VPS URL uses `/InboxAI` (Linux is case-sensitive!)
+2. Client was calling `/inboxai/api/...` but the actual path was `/InboxAI/...`
+3. OAuth redirect URIs didn't match the actual URL path
+4. All API endpoints failed, breaking authentication, sync, and data loading
 
 ### Solution Implemented
+- **Case-sensitive base path**: Changed Vite config to use `/InboxAI/` (matching VPS URL)
 - **Express Router mounting** - API routes now mount at `${APP_BASE_PATH}/api` using Express Router
 - **OAuth redirect URI updates** - Both Gmail and Calendar clients now include base path in OAuth URIs
 - **Debug endpoint enhancement** - `/api/auth/debug` now shows base-path-aware redirect URI
-- **Files modified**: `server/routes.ts` (lines 21-28, 44-73, 978-982)
+- **Files modified**: `vite.config.ts`, `server/routes.ts`
 
 ### Required VPS Environment Variables
-**CRITICAL:** Make sure `APP_URL` does NOT include `/inboxai` - only the base domain:
+**CRITICAL:** Use `/InboxAI` (with capital letters) to match the actual URL path:
 
 ```env
 NODE_ENV=production
 PORT=5000
-APP_BASE_PATH=/inboxai
+APP_BASE_PATH=/InboxAI
 APP_URL=https://redweyne.com
-DATABASE_URL=postgresql://inboxai_user:AaS53372789@localhost:5432/InboxAI
-GOOGLE_CLIENT_ID=T7673218221-0hvjn2gfVd1u063q26lrS6q5l1rkterqg.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=GOCSEPX-qdvxS0Vj7-W9QzPFDCh9ai-ppJ5w
-GOOGLE_REDIRECT_URI=https://redweyne.com/inboxai/api/auth/google/callback
-GEMINI_API_KEY=AIzaSyADHzaqQgbLxKXU4fLjaAWyFTzY9riQyU
+DATABASE_URL=postgresql://inboxai_user:YOUR_PASSWORD@localhost:5432/InboxAI
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_REDIRECT_URI=https://redweyne.com/InboxAI/api/auth/google/callback
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### How It Works
-1. **API routes**: Mounted at `${APP_BASE_PATH}/api` → `/inboxai/api/...`
-2. **OAuth callbacks**: Include full path → `https://redweyne.com/inboxai/api/auth/google/callback`
-3. **Client-side routing**: Uses same base path from environment
+1. **API routes**: Mounted at `${APP_BASE_PATH}/api` → `/InboxAI/api/...`
+2. **OAuth callbacks**: Include full path → `https://redweyne.com/InboxAI/api/auth/google/callback`
+3. **Client-side routing**: Uses same base path from Vite's BASE_URL (`/InboxAI/`)
 
 ### Deployment Steps
 1. Pull code: `git pull origin main`

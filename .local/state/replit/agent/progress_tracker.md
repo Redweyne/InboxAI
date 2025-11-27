@@ -248,3 +248,10 @@
 [x] 248. Verified application UI - Dashboard loads correctly with all features operational
 [x] 249. Migration to fresh Replit environment fully completed - All systems operational and ready for use
 [x] 250. Import migration process completed successfully - Project ready for development and VPS deployment
+[x] 251. User reported VPS deployment broken - Dashboard/Sync/Navigation not working at redweyne.com/InboxAI
+[x] 252. ROOT CAUSE IDENTIFIED - Case sensitivity mismatch: Vite config used /inboxai/ but VPS URL uses /InboxAI
+[x] 253. Fixed vite.config.ts - Changed base from /inboxai/ to /InboxAI/ (Linux is case-sensitive!)
+[x] 254. Updated replit.md - Corrected all APP_BASE_PATH and GOOGLE_REDIRECT_URI to use /InboxAI
+[x] 255. Updated VPS_SUBPATH_API_FIX.md - Complete rewrite with case sensitivity warnings and correct paths
+[x] 256. Build verified - HTML output correctly shows /InboxAI/ in favicon, scripts, and CSS links
+[x] 257. Case sensitivity fix completed - Ready for VPS deployment with correct path casing
