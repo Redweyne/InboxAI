@@ -88,19 +88,46 @@ Run: `npm run dev`
 
 ## VPS Subpath Deployment
 
-For deploying to a subpath (e.g., `redweyne.com/InboxAI`), the application now supports the `APP_BASE_PATH` environment variable.
+The application has been fixed to support deployment at a subpath (e.g., `redweyne.com/inboxai`).
+
+### Problem That Was Fixed (November 27, 2025)
+The application was showing skeleton UI with non-functional buttons when deployed to `/inboxai` subpath because:
+1. Client was calling `/inboxai/api/...` but server routes were at `/api/...` (404 errors)
+2. OAuth redirect URIs didn't include the base path
+3. All API endpoints failed, breaking authentication, sync, and data loading
+
+### Solution Implemented
+- **Express Router mounting** - API routes now mount at `${APP_BASE_PATH}/api` using Express Router
+- **OAuth redirect URI updates** - Both Gmail and Calendar clients now include base path in OAuth URIs
+- **Debug endpoint enhancement** - `/api/auth/debug` now shows base-path-aware redirect URI
+- **Files modified**: `server/routes.ts` (lines 21-28, 44-73, 978-982)
 
 ### Required VPS Environment Variables
+**CRITICAL:** Make sure `APP_URL` does NOT include `/inboxai` - only the base domain:
+
 ```env
+NODE_ENV=production
+PORT=5000
 APP_BASE_PATH=/inboxai
 APP_URL=https://redweyne.com
+DATABASE_URL=postgresql://inboxai_user:AaS53372789@localhost:5432/InboxAI
+GOOGLE_CLIENT_ID=T7673218221-0hvjn2gfVd1u063q26lrS6q5l1rkterqg.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSEPX-qdvxS0Vj7-W9QzPFDCh9ai-ppJ5w
 GOOGLE_REDIRECT_URI=https://redweyne.com/inboxai/api/auth/google/callback
+GEMINI_API_KEY=AIzaSyADHzaqQgbLxKXU4fLjaAWyFTzY9riQyU
 ```
 
 ### How It Works
-- API routes are mounted at `${APP_BASE_PATH}/api` (e.g., `/inboxai/api`)
-- OAuth callbacks include the base path in the redirect URI
-- Client-side routing uses the same base path
+1. **API routes**: Mounted at `${APP_BASE_PATH}/api` → `/inboxai/api/...`
+2. **OAuth callbacks**: Include full path → `https://redweyne.com/inboxai/api/auth/google/callback`
+3. **Client-side routing**: Uses same base path from environment
+
+### Deployment Steps
+1. Pull code: `git pull origin main`
+2. Build: `npm run build`
+3. Update `.env` file with the configuration above
+4. Update Google Cloud Console to add the redirect URI
+5. Restart: `pm2 restart InboxAI`
 
 See `VPS_SUBPATH_API_FIX.md` for detailed deployment instructions.
 
