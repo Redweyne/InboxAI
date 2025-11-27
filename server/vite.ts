@@ -72,7 +72,7 @@ export async function setupVite(app: Express, server: Server) {
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
-  const basePath = process.env.APP_BASE_PATH || '/inboxai';
+  const basePath = process.env.APP_BASE_PATH || '/InboxAI';
 
   console.log(`[SERVER DEBUG] APP_BASE_PATH: "${basePath}" | distPath: "${distPath}"`);
 

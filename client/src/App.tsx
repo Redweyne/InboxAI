@@ -21,7 +21,7 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   // Use the Vite BASE_URL for the router base
-  // In dev: "/" | In production: "/inboxai/"
+  // In dev: "/" | In production: "/InboxAI/"
   const basePath = import.meta.env.BASE_URL;
   
   // CRITICAL DEBUG LOG - Check router base at runtime

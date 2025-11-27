@@ -261,3 +261,9 @@
 [x] 261. Verified all API endpoints responding correctly (HTTP 200 status codes)
 [x] 262. Migration to fresh Replit environment fully completed - All systems operational and ready for use
 [x] 263. Import migration process completed successfully - Project ready for development and VPS deployment
+[x] 264. User reported VPS broken at redweyne.com/InboxAI - Dashboard, Sync, navigation not working
+[x] 265. ROOT CAUSE FOUND - server/vite.ts had fallback '/inboxai' (lowercase) instead of '/InboxAI' (matching VPS URL)
+[x] 266. Fixed server/vite.ts - Changed default basePath from '/inboxai' to '/InboxAI' for case-sensitivity
+[x] 267. Updated comments in client/src/App.tsx and client/src/lib/base-path.ts to use correct case
+[x] 268. Built production assets - Verified all paths use /InboxAI/ (favicon, JS, CSS)
+[x] 269. VPS case-sensitivity fix completed - Ready for deployment

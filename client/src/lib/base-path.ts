@@ -1,9 +1,9 @@
 /**
  * Get the base path for the application
- * This respects the Vite base config which is set to /inboxai/ for production
+ * This respects the Vite base config which is set to /InboxAI/ for production
  * and / for development
  * 
- * DEBUG: On VPS, this should be "" (empty after removing trailing slash from "/inboxai/")
+ * DEBUG: On VPS, this should be "" (empty after removing trailing slash from "/InboxAI/")
  * In dev, this should be "" (empty after removing trailing slash from "/")
  */
 export const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
