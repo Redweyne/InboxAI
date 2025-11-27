@@ -1,5 +1,6 @@
-import type { Express } from "express";
+import type { Express, Router } from "express";
 import { createServer, type Server } from "http";
+import { Router as createRouter } from "express";
 import { storage } from "./storage.js";
 import { getUncachableGmailClient, getAuthUrl, handleAuthCallback, isAuthenticated, getUserEmail } from "./gmail-client.js";
 import { getUncachableGoogleCalendarClient, setTokens as setCalendarTokens } from "./calendar-client.js";
@@ -15,29 +16,48 @@ import { generateChatResponse } from "./ai-service.js";
 import { executeSendEmail, executeEmailModify, executeCalendarAction } from "./ai-actions.js";
 import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "../shared/schema.js";
 
+// Get base path from environment variable (e.g., "/inboxai" for VPS deployment)
+// This should match the Vite base config in production
+function getBasePath(): string {
+  const basePath = process.env.APP_BASE_PATH || '';
+  // Ensure it starts with / if not empty, and doesn't end with /
+  if (basePath && !basePath.startsWith('/')) {
+    return '/' + basePath;
+  }
+  return basePath.replace(/\/$/, '');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  const basePath = getBasePath();
+  const apiRouter = createRouter();
+  
+  console.log(`📍 Registering routes with base path: "${basePath}" (API at ${basePath}/api/...)`);
+  
   // ============ OAUTH ROUTES ============
   
   // Check if user is authenticated
-  app.get("/api/auth/status", async (req, res) => {
+  apiRouter.get("/auth/status", async (req, res) => {
     res.json({ authenticated: await isAuthenticated() });
   });
   
   // Debug endpoint to check OAuth configuration
-  app.get("/api/auth/debug", (req, res) => {
+  apiRouter.get("/auth/debug", (req, res) => {
+    // Use base path for correct redirect URI construction
     const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
       (process.env.APP_URL 
-        ? `${process.env.APP_URL}/api/auth/google/callback`
+        ? `${process.env.APP_URL}${basePath}/api/auth/google/callback`
         : process.env.REPLIT_DEV_DOMAIN
-          ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`
-          : 'http://localhost:5000/api/auth/google/callback');
+          ? `https://${process.env.REPLIT_DEV_DOMAIN}${basePath}/api/auth/google/callback`
+          : `http://localhost:5000${basePath}/api/auth/google/callback`);
     
     res.json({
       redirectUri,
+      basePath: basePath || '(none)',
       hasClientId: !!process.env.GOOGLE_CLIENT_ID,
       hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
       hasRedirectUriEnv: !!process.env.GOOGLE_REDIRECT_URI,
       hasAppUrl: !!process.env.APP_URL,
+      hasBasePath: !!process.env.APP_BASE_PATH,
       environment: process.env.NODE_ENV,
       instructions: [
         '1. Copy the redirect URI above',
@@ -50,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get OAuth URL
-  app.get("/api/auth/google/url", (req, res) => {
+  apiRouter.get("/auth/google/url", (req, res) => {
     try {
       const authUrl = getAuthUrl();
       console.log('📤 Sending OAuth URL to client');
@@ -62,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // OAuth callback
-  app.get("/api/auth/google/callback", async (req, res) => {
+  apiRouter.get("/auth/google/callback", async (req, res) => {
     try {
       const code = req.query.code as string;
       if (!code) {
@@ -92,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Logout - delete OAuth tokens and clear all synced data
-  app.post("/api/auth/logout", async (req, res) => {
+  apiRouter.post("/auth/logout", async (req, res) => {
     try {
       // Delete OAuth token from database
       await storage.deleteOAuthToken('google');
@@ -113,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ EMAIL ROUTES ============
   
   // Sync emails from Gmail
-  app.post("/api/emails/sync", async (req, res) => {
+  apiRouter.post("/emails/sync", async (req, res) => {
     try {
       const gmail = await getUncachableGmailClient();
       
@@ -210,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all emails
-  app.get("/api/emails", async (req, res) => {
+  apiRouter.get("/emails", async (req, res) => {
     try {
       const emails = await storage.getEmails();
       res.json(emails);
@@ -220,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get email by ID
-  app.get("/api/emails/:id", async (req, res) => {
+  apiRouter.get("/emails/:id", async (req, res) => {
     try {
       const email = await storage.getEmail(req.params.id);
       if (!email) {
@@ -233,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get draft response for an email
-  app.get("/api/emails/:id/draft", async (req, res) => {
+  apiRouter.get("/emails/:id/draft", async (req, res) => {
     try {
       const email = await storage.getEmail(req.params.id);
       if (!email) {
@@ -250,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ CALENDAR ROUTES ============
 
   // Sync calendar events from Google Calendar
-  app.post("/api/calendar/sync", async (req, res) => {
+  apiRouter.post("/calendar/sync", async (req, res) => {
     try {
       const calendar = await getUncachableGoogleCalendarClient();
 
@@ -302,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all calendar events
-  app.get("/api/calendar/events", async (req, res) => {
+  apiRouter.get("/calendar/events", async (req, res) => {
     try {
       const events = await storage.getCalendarEvents();
       res.json(events);
@@ -312,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get upcoming events
-  app.get("/api/calendar/upcoming", async (req, res) => {
+  apiRouter.get("/calendar/upcoming", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const events = await storage.getUpcomingEvents(limit);
@@ -323,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Find free time slots
-  app.get("/api/calendar/free-slots", async (req, res) => {
+  apiRouter.get("/calendar/free-slots", async (req, res) => {
     try {
       const durationMinutes = parseInt(req.query.duration as string) || 60;
       const daysAhead = parseInt(req.query.days as string) || 7;
@@ -347,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ CHAT ROUTES ============
 
   // Get chat messages
-  app.get("/api/chat/messages", async (req, res) => {
+  apiRouter.get("/chat/messages", async (req, res) => {
     try {
       const messages = await storage.getChatMessages();
       res.json(messages);
@@ -357,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send chat message and get AI response
-  app.post("/api/chat/send", async (req, res) => {
+  apiRouter.post("/chat/send", async (req, res) => {
     try {
       const { content } = req.body;
 
@@ -391,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Clear chat history
-  app.delete("/api/chat/messages", async (req, res) => {
+  apiRouter.delete("/chat/messages", async (req, res) => {
     try {
       await storage.clearChatHistory();
       res.json({ success: true });
@@ -403,7 +423,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ ANALYTICS ROUTES ============
 
   // Get email analytics
-  app.get("/api/analytics/email", async (req, res) => {
+  apiRouter.get("/analytics/email", async (req, res) => {
     try {
       const analytics = await storage.getEmailAnalytics();
       res.json(analytics);
@@ -413,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get calendar analytics
-  app.get("/api/analytics/calendar", async (req, res) => {
+  apiRouter.get("/analytics/calendar", async (req, res) => {
     try {
       const analytics = await storage.getCalendarAnalytics();
       res.json(analytics);
@@ -425,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ AI ACTION ROUTES ============
 
   // Send email via AI
-  app.post("/api/actions/send-email", async (req, res) => {
+  apiRouter.post("/actions/send-email", async (req, res) => {
     try {
       const { to, subject, body, cc, bcc } = req.body;
 
@@ -443,7 +463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Modify email (mark read/unread, delete, archive, star)
-  app.post("/api/actions/modify-email", async (req, res) => {
+  apiRouter.post("/actions/modify-email", async (req, res) => {
     try {
       const { emailId, action } = req.body;
 
@@ -466,7 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Calendar actions (create, update, delete events)
-  app.post("/api/actions/calendar", async (req, res) => {
+  apiRouter.post("/actions/calendar", async (req, res) => {
     try {
       const { action, eventData, eventId } = req.body;
 
@@ -491,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ INITIAL DATA SYNC ============
   
   // Endpoint to trigger initial sync
-  app.post("/api/sync-all", async (req, res) => {
+  apiRouter.post("/sync-all", async (req, res) => {
     try {
       // Check if authenticated
       if (!(await isAuthenticated())) {
@@ -845,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ DASHBOARD ROUTES ============
 
   // Get dashboard data
-  app.get("/api/dashboard", async (req, res) => {
+  apiRouter.get("/dashboard", async (req, res) => {
     try {
       const dashboard = await storage.getDashboardData();
       
@@ -868,7 +888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ TASK ROUTES ============
 
   // Get all tasks
-  app.get("/api/tasks", async (req, res) => {
+  apiRouter.get("/tasks", async (req, res) => {
     try {
       const tasks = await storage.getTasks();
       res.json(tasks);
@@ -879,7 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single task
-  app.get("/api/tasks/:id", async (req, res) => {
+  apiRouter.get("/tasks/:id", async (req, res) => {
     try {
       const task = await storage.getTask(req.params.id);
       if (!task) {
@@ -893,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create task
-  app.post("/api/tasks", async (req, res) => {
+  apiRouter.post("/tasks", async (req, res) => {
     try {
       const task = await storage.createTask(req.body);
       res.json(task);
@@ -904,7 +924,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update task
-  app.patch("/api/tasks/:id", async (req, res) => {
+  apiRouter.patch("/tasks/:id", async (req, res) => {
     try {
       const task = await storage.updateTask(req.params.id, req.body);
       if (!task) {
@@ -918,7 +938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete task
-  app.delete("/api/tasks/:id", async (req, res) => {
+  apiRouter.delete("/tasks/:id", async (req, res) => {
     try {
       const success = await storage.deleteTask(req.params.id);
       if (!success) {
@@ -932,7 +952,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get pending tasks
-  app.get("/api/tasks/filter/pending", async (req, res) => {
+  apiRouter.get("/tasks/filter/pending", async (req, res) => {
     try {
       const tasks = await storage.getPendingTasks();
       res.json(tasks);
@@ -945,7 +965,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ============ DATA MANAGEMENT ROUTES ============
 
   // Clear all data
-  app.post("/api/data/clear", async (req, res) => {
+  apiRouter.post("/data/clear", async (req, res) => {
     try {
       await storage.clearAllData();
       res.json({ success: true, message: "All data cleared successfully" });
@@ -954,6 +974,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: error.message });
     }
   });
+
+  // Mount the API router at the correct path
+  // In production with APP_BASE_PATH=/inboxai, this becomes /inboxai/api/...
+  // In development without APP_BASE_PATH, this remains /api/...
+  const apiMountPath = `${basePath}/api`;
+  app.use(apiMountPath, apiRouter);
+  console.log(`✅ API routes mounted at: ${apiMountPath}`);
 
   const httpServer = createServer(app);
   return httpServer;

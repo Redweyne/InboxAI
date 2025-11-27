@@ -5,6 +5,10 @@ import { setupVite, serveStatic, log } from "./vite.js";
 
 const app = express();
 
+// Get base path from environment variable (e.g., "/inboxai" for VPS deployment)
+const basePath = process.env.APP_BASE_PATH?.replace(/\/$/, '') || '';
+const apiPathPrefix = `${basePath}/api`;
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
@@ -17,8 +21,14 @@ app.use(express.json({
 }));
 app.use(express.urlencoded({ extended: false }));
 
+// Helper function to check if path is an API path (handles both /api and /inboxai/api)
+function isApiPath(path: string): boolean {
+  // Check for base path API (e.g., /inboxai/api) or plain /api
+  return path.startsWith(apiPathPrefix) || path.startsWith('/api');
+}
+
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api")) {
+  if (isApiPath(req.path)) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
@@ -39,7 +49,7 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    if (isApiPath(path)) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;

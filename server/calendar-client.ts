@@ -9,13 +9,16 @@ function getOAuth2Client() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   
-  // Use GOOGLE_REDIRECT_URI if provided, otherwise construct from APP_URL
+  // Get base path for subpath deployments (e.g., /inboxai)
+  const basePath = process.env.APP_BASE_PATH?.replace(/\/$/, '') || '';
+  
+  // Use GOOGLE_REDIRECT_URI if provided, otherwise construct from APP_URL + base path
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || 
     (process.env.APP_URL 
-      ? `${process.env.APP_URL}/api/auth/google/callback`
+      ? `${process.env.APP_URL}${basePath}/api/auth/google/callback`
       : process.env.REPLIT_DEV_DOMAIN
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`
-        : 'http://localhost:5000/api/auth/google/callback');
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}${basePath}/api/auth/google/callback`
+        : `http://localhost:5000${basePath}/api/auth/google/callback`);
 
   if (!clientId || !clientSecret) {
     throw new Error('Google OAuth credentials not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your secrets.');
