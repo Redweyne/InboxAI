@@ -72,7 +72,13 @@ export async function setupVite(app: Express, server: Server) {
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
-  const basePath = process.env.APP_BASE_PATH || '/InboxAI';
+  // Read from APP_BASE_PATH, default to empty string (root deployment)
+  // Normalize: ensure it starts with / if non-empty, and doesn't end with /
+  let basePath = process.env.APP_BASE_PATH || '';
+  if (basePath && !basePath.startsWith('/')) {
+    basePath = '/' + basePath;
+  }
+  basePath = basePath.replace(/\/$/, '');
 
   console.log(`[SERVER DEBUG] APP_BASE_PATH: "${basePath}" | distPath: "${distPath}"`);
 
@@ -98,9 +104,11 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
   
-  // Redirect root to the app base path
-  app.get('/', (_req, res) => {
-    console.log(`[SERVER DEBUG] Root redirect: / -> ${basePath}`);
-    res.redirect(basePath);
-  });
+  // Redirect root to the app base path (only when deploying to a subpath)
+  if (basePath) {
+    app.get('/', (_req, res) => {
+      console.log(`[SERVER DEBUG] Root redirect: / -> ${basePath}`);
+      res.redirect(basePath);
+    });
+  }
 }

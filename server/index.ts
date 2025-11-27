@@ -6,7 +6,16 @@ import { setupVite, serveStatic, log } from "./vite.js";
 const app = express();
 
 // Get base path from environment variable (e.g., "/inboxai" for VPS deployment)
-const basePath = process.env.APP_BASE_PATH?.replace(/\/$/, '') || '';
+// Normalize: ensure starts with / if non-empty, remove trailing /
+function normalizeBasePath(path: string | undefined): string {
+  if (!path) return '';
+  let normalized = path.replace(/\/$/, '');
+  if (normalized && !normalized.startsWith('/')) {
+    normalized = '/' + normalized;
+  }
+  return normalized;
+}
+const basePath = normalizeBasePath(process.env.APP_BASE_PATH);
 const apiPathPrefix = `${basePath}/api`;
 
 declare module 'http' {
