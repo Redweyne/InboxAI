@@ -282,3 +282,9 @@
 [x] 282. Build verified - grep confirms dist/server/vite.js now has correct "..", "public" path
 [x] 283. Created VPS_FIX_FINAL.md with complete deployment instructions including .env case fix
 [x] 284. REAL FIX COMPLETE - Both path resolution and case sensitivity issues addressed
+[x] 285. User says .env has ALWAYS been /inboxai and it used to work - NOT an .env issue
+[x] 286. CRITICAL DISCOVERY - VPS running OLD BUNDLED CODE: dist/server/index.cjs (esbuild) instead of dist/server/index.js (tsc)
+[x] 287. VPS has 833603-line bundled file from old esbuild build, current build creates individual .js files
+[x] 288. Root cause: VPS never rebuilt after switching from esbuild to tsc
+[x] 289. Created VPS_DEFINITIVE_FIX.md - User must DELETE dist folder completely and rebuild from scratch
+[x] 290. PM2 must be reconfigured to run dist/server/index.js (not old index.cjs)
