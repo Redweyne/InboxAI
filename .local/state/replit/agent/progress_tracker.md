@@ -288,3 +288,9 @@
 [x] 288. Root cause: VPS never rebuilt after switching from esbuild to tsc
 [x] 289. Created VPS_DEFINITIVE_FIX.md - User must DELETE dist folder completely and rebuild from scratch
 [x] 290. PM2 must be reconfigured to run dist/server/index.js (not old index.cjs)
+[x] 291. User showed VPS build creates NO dist/server/ directory at all
+[x] 292. REPRODUCED ON REPLIT - Same issue happens here when tsbuildinfo cache is stale
+[x] 293. ROOT CAUSE FOUND - TypeScript incremental build cache (tsbuildinfo) prevents new output
+[x] 294. Fix: Delete node_modules/typescript/tsbuildinfo before building
+[x] 295. Verified: Clean build creates correct dist/server/ structure with all .js files
+[x] 296. Created VPS_CACHE_FIX.md with correct instructions
