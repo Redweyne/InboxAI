@@ -274,3 +274,11 @@
 [x] 274. Build verified - HTML now correctly references /InboxAI/assets/index-*.js and /InboxAI/assets/index-*.css
 [x] 275. Created VPS_BLANK_PAGE_FIX.md with deployment instructions
 [x] 276. BLANK PAGE FIX COMPLETE - Ready for VPS deployment
+[x] 277. User reported PREVIOUS FIX DIDN'T WORK - VPS logs show ERR_INVALID_ARG_TYPE in serveStatic
+[x] 278. Called architect for proper debugging - Found REAL root cause in server/vite.ts
+[x] 279. ROOT CAUSE #1: distPath used path.resolve(__dirname, "public") - but in dist/server/, this points to non-existent dist/server/public
+[x] 280. ROOT CAUSE #2: User's .env has APP_BASE_PATH=/inboxai (lowercase) but URL is /InboxAI (uppercase) - Linux is case-sensitive!
+[x] 281. Fixed server/vite.ts - Changed distPath to path.resolve(__dirname, "..", "public") to correctly find dist/public
+[x] 282. Build verified - grep confirms dist/server/vite.js now has correct "..", "public" path
+[x] 283. Created VPS_FIX_FINAL.md with complete deployment instructions including .env case fix
+[x] 284. REAL FIX COMPLETE - Both path resolution and case sensitivity issues addressed

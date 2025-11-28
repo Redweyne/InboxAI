@@ -71,7 +71,9 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(__dirname, "public");
+  // In production, __dirname is dist/server/, but static files are in dist/public/
+  // So we need to go up one level (..) to reach dist/, then into public/
+  const distPath = path.resolve(__dirname, "..", "public");
   // Read from APP_BASE_PATH, default to empty string (root deployment)
   // Normalize: ensure it starts with / if non-empty, and doesn't end with /
   let basePath = process.env.APP_BASE_PATH || '';
