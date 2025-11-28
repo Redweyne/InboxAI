@@ -90,19 +90,32 @@ export function serveStatic(app: Express) {
 
   // DEBUG: Log all requests to the base path
   app.use((req, res, next) => {
-    if (req.path.startsWith(basePath)) {
+    if (!basePath || req.path.startsWith(basePath)) {
       console.log(`[STATIC DEBUG] ${req.method} ${req.path}`);
     }
     next();
   });
 
-  app.use(basePath, express.static(distPath));
-
-  // fall through to index.html if the file doesn't exist
-  app.use(`${basePath}/*`, (_req, res) => {
-    console.log(`[ROUTER FALLBACK] Serving index.html for ${_req.path}`);
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  // Serve static files - handle both root and subpath deployments
+  if (basePath) {
+    // Subpath deployment: serve at /inboxai/*
+    app.use(basePath, express.static(distPath));
+    
+    // Fall through to index.html if the file doesn't exist
+    app.use(`${basePath}/*`, (_req, res) => {
+      console.log(`[ROUTER FALLBACK] Serving index.html for ${_req.path}`);
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
+  } else {
+    // Root deployment: serve at /*
+    app.use(express.static(distPath));
+    
+    // Fall through to index.html if the file doesn't exist
+    app.use("/*", (_req, res) => {
+      console.log(`[ROUTER FALLBACK] Serving index.html for ${_req.path}`);
+      res.sendFile(path.resolve(distPath, "index.html"));
+    });
+  }
   
   // Redirect root to the app base path (only when deploying to a subpath)
   if (basePath) {
