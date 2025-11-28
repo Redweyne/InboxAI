@@ -44,31 +44,19 @@ export default function Dashboard() {
   const handleQuickAction = async (action: string, itemId: string, itemType: string) => {
     switch (action) {
       case "mark_read":
-        await apiRequest(`/api/actions/modify-email`, {
-          method: "POST",
-          body: JSON.stringify({ emailId: itemId, action: "mark_read" }),
-          headers: { "Content-Type": "application/json" },
-        });
+        await apiRequest("POST", "/api/actions/modify-email", { emailId: itemId, action: "mark_read" });
         toast({ title: "Email marked as read" });
         queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
         queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
         break;
       case "archive":
-        await apiRequest(`/api/actions/modify-email`, {
-          method: "POST",
-          body: JSON.stringify({ emailId: itemId, action: "archive" }),
-          headers: { "Content-Type": "application/json" },
-        });
+        await apiRequest("POST", "/api/actions/modify-email", { emailId: itemId, action: "archive" });
         toast({ title: "Email archived" });
         queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
         queryClient.invalidateQueries({ queryKey: ["/api/emails"] });
         break;
       case "complete":
-        await apiRequest(`/api/tasks/${itemId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ status: "completed" }),
-          headers: { "Content-Type": "application/json" },
-        });
+        await apiRequest("PATCH", `/api/tasks/${itemId}`, { status: "completed" });
         toast({ title: "Task completed", description: "Great job!" });
         queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] });
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });

@@ -192,3 +192,40 @@ serving on port 5000
 - **ALWAYS** delete TypeScript cache before build: `rm -rf node_modules/typescript/tsbuildinfo`
 - **ALWAYS** use `git reset --hard` on VPS if local changes block pull
 - **DO NOT** use uppercase letters in APP_BASE_PATH - Linux URLs are case-sensitive
+
+### CRITICAL Nginx Configuration (Nov 28, 2025 - Dashboard Not Loading Fix)
+
+If the app shell shows but dashboard/features don't work, your Nginx is stripping the `/inboxai` prefix!
+
+**WRONG** (strips prefix - causes 404 on API calls):
+```nginx
+location /inboxai {
+    proxy_pass http://localhost:5000/;  # Trailing slash strips prefix!
+}
+```
+
+**CORRECT** (preserves prefix - API calls work):
+```nginx
+location /inboxai {
+    proxy_pass http://localhost:5000;  # NO trailing slash!
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_cache_bypass $http_upgrade;
+}
+```
+
+After fixing Nginx config:
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Verify API works:
+```bash
+curl -I https://redweyne.com/inboxai/api/dashboard
+# Should return 200 OK, not 404
+```
