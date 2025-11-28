@@ -1,27 +1,23 @@
 # VPS PM2 Configuration Fix
 
 ## Problem
-PM2 is configured to run `dist/server/index.cjs` but the build now produces `dist/server/index.js` (ESM format).
+The ecosystem.config.js in the codebase was pointing to `dist/server/index.cjs` (OLD) but the build now produces `dist/server/index.js` (ESM format). This file has now been fixed.
 
 ## Quick Fix (SSH into your VPS)
 
-### Step 1: Rebuild the application
+**Run these 4 commands:**
+
 ```bash
 cd /var/www/InboxAI
 git pull origin main
-rm -rf dist node_modules/typescript/tsbuildinfo
-npm run build
+rm -rf dist && npm run build
+pm2 restart ecosystem.config.js && pm2 save
 ```
 
-### Step 2: Update PM2 to use the correct file
-```bash
-pm2 stop InboxAI
-pm2 delete InboxAI
-pm2 start dist/server/index.js --name InboxAI
-pm2 save
-```
+That's it! The fix is already in the code - you just need to pull and restart.
 
-### Step 3: Verify it's running
+## Verify it's running
+
 ```bash
 pm2 logs InboxAI --lines 20
 ```
@@ -33,29 +29,9 @@ API routes mounted at: /inboxai/api
 serving on port 5000
 ```
 
-## If you have an ecosystem.config.js file
+## What Was Fixed
+The `ecosystem.config.js` file was updated from:
+- `script: 'dist/server/index.cjs'` (OLD - doesn't exist)
+- `script: 'dist/server/index.js'` (NEW - correct path)
 
-Edit it to change the script path:
-
-```bash
-nano ecosystem.config.js
-```
-
-Change:
-```javascript
-script: 'dist/server/index.cjs'  // OLD - WRONG
-```
-
-To:
-```javascript
-script: 'dist/server/index.js'   // NEW - CORRECT
-```
-
-Then restart:
-```bash
-pm2 restart ecosystem.config.js
-pm2 save
-```
-
-## Why This Happened
-The build system was changed from esbuild (which produced .cjs files) to TypeScript's native compiler tsc (which produces .js files). The code works correctly, but PM2 was still pointing to the old filename.
+The build system was changed from esbuild (which produced .cjs files) to TypeScript's native compiler tsc (which produces .js files).

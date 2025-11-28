@@ -303,3 +303,6 @@
 [x] 303. User reported VPS broken - Cannot find module dist/server/index.cjs error
 [x] 304. ROOT CAUSE FOUND - PM2 configured for old .cjs file but build now produces .js (ESM)
 [x] 305. Created VPS_PM2_FIX.md - User needs to update PM2 to point to dist/server/index.js
+[x] 306. FOUND ROOT CAUSE - ecosystem.config.js in codebase was pointing to OLD index.cjs file
+[x] 307. FIXED ecosystem.config.js - Changed script from 'dist/server/index.cjs' to 'dist/server/index.js'
+[x] 308. Updated VPS_PM2_FIX.md with simplified 4-command fix
