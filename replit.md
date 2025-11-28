@@ -4,7 +4,7 @@
 Inbox AI is a personal productivity assistant that helps you manage your Gmail inbox and Google Calendar with intelligent AI-powered insights. The application uses Google's Gemini AI to provide helpful responses about your emails, calendar, and schedule.
 
 ## Project Status
-**Last Updated:** November 27, 2025
+**Last Updated:** November 28, 2025
 **Status:** Production-Ready ✅
 
 ### Recent Changes
@@ -142,3 +142,53 @@ Simply ask the AI in natural language:
 - "Delete that spam email from earlier"
 
 The AI will detect your intent and execute the action automatically!
+
+## VPS Deployment - Critical PM2 Configuration (MUST READ!)
+
+### Problem Summary (Fixed Nov 28, 2025)
+After build system switch from esbuild to tsc, PM2 deployments were failing with:
+- `Error: Cannot find module 'dist/server/index.cjs'`
+- Blank pages despite server running
+- Case sensitivity mismatches between build and Nginx
+
+### Root Causes Identified
+1. **File Extension Issue**: `ecosystem.config.js` fails when `package.json` has `"type": "module"` (ESM). PM2 expects CommonJS for config files.
+2. **Old Output Path**: ecosystem.config.js pointed to old `dist/server/index.cjs` but build now produces `dist/server/index.js`
+3. **Build Cache Corruption**: TypeScript incremental build cache could silently skip compilation
+4. **Case Sensitivity**: Build was using `/InboxAI` but Nginx was configured for `/inboxai` - Linux is case-sensitive!
+
+### Solution Applied
+1. **Renamed config file** from `ecosystem.config.js` to `ecosystem.config.cjs` (CommonJS format)
+2. **Updated script path** from `dist/server/index.cjs` to `dist/server/index.js`
+3. **Added APP_BASE_PATH to PM2 env** - ensures it matches Nginx configuration
+4. **Changed build script** to use lowercase `/inboxai` to match Nginx
+
+### VPS Deployment Command (Nov 28, 2025)
+```bash
+cd /var/www/InboxAI
+git reset --hard origin/main
+rm -rf dist node_modules/typescript/tsbuildinfo
+npm run build
+pm2 delete InboxAI
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 logs InboxAI --lines 20
+```
+
+### Key Files Modified
+- `ecosystem.config.cjs` - Renamed from .js, now uses correct path and sets APP_BASE_PATH
+- `package.json` - Changed build script to use `/inboxai` (lowercase) instead of `/InboxAI`
+
+### Expected Output After Fix
+```
+Registering routes with base path: "/inboxai"
+API routes mounted at: /inboxai/api
+serving on port 5000
+```
+
+### CRITICAL NOTES FOR NEXT VPS DEPLOYMENT
+- **ALWAYS** use `ecosystem.config.cjs` (NOT .js) when package.json has `"type": "module"`
+- **ALWAYS** verify Nginx config path matches build APP_BASE_PATH (case-sensitive!)
+- **ALWAYS** delete TypeScript cache before build: `rm -rf node_modules/typescript/tsbuildinfo`
+- **ALWAYS** use `git reset --hard` on VPS if local changes block pull
+- **DO NOT** use uppercase letters in APP_BASE_PATH - Linux URLs are case-sensitive
