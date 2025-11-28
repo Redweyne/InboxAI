@@ -300,3 +300,6 @@
 [x] 300. Verified all API endpoints responding correctly (HTTP 200 status codes)
 [x] 301. Migration to fresh Replit environment fully completed - All systems operational and ready for use
 [x] 302. Import migration process completed successfully - Project ready for development and VPS deployment
+[x] 303. User reported VPS broken - Cannot find module dist/server/index.cjs error
+[x] 304. ROOT CAUSE FOUND - PM2 configured for old .cjs file but build now produces .js (ESM)
+[x] 305. Created VPS_PM2_FIX.md - User needs to update PM2 to point to dist/server/index.js
