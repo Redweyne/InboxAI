@@ -267,3 +267,10 @@
 [x] 267. Updated comments in client/src/App.tsx and client/src/lib/base-path.ts to use correct case
 [x] 268. Built production assets - Verified all paths use /InboxAI/ (favicon, JS, CSS)
 [x] 269. VPS case-sensitivity fix completed - Ready for deployment
+[x] 270. User reported BLANK PAGE at redweyne.com/InboxAI - Dashboard, Sync, nothing works
+[x] 271. Called architect for deep root cause analysis of blank page issue
+[x] 272. ROOT CAUSE FOUND - APP_BASE_PATH not set during build, causing assets to reference "/" instead of "/InboxAI/"
+[x] 273. Fixed package.json build script - Added APP_BASE_PATH=/InboxAI to vite build command
+[x] 274. Build verified - HTML now correctly references /InboxAI/assets/index-*.js and /InboxAI/assets/index-*.css
+[x] 275. Created VPS_BLANK_PAGE_FIX.md with deployment instructions
+[x] 276. BLANK PAGE FIX COMPLETE - Ready for VPS deployment
