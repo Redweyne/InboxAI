@@ -312,3 +312,9 @@
 [x] 306. FOUND ROOT CAUSE - ecosystem.config.js in codebase was pointing to OLD index.cjs file
 [x] 307. FIXED ecosystem.config.js - Changed script from 'dist/server/index.cjs' to 'dist/server/index.js'
 [x] 308. Updated VPS_PM2_FIX.md with simplified 4-command fix
+[x] 309. User reported VPS navigation broken - clicking Dashboard redirects to redweyne.com instead of /inboxai
+[x] 310. ROOT CAUSE FOUND - Wouter Router ignores base paths ending with trailing slash ("/inboxai/")
+[x] 311. Fixed App.tsx - Changed from import.meta.env.BASE_URL to trimmed basePath from base-path.ts
+[x] 312. Wouter now receives base="/inboxai" (no trailing slash) which works correctly
+[x] 313. Build verified - Production JS correctly uses trimmed basePath for router
+[x] 314. VPS navigation fix completed - Ready for deployment

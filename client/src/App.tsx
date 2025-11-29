@@ -10,6 +10,7 @@ import { SyncBanner } from "@/components/sync-banner";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { basePath } from "@/lib/base-path";
 import type { DashboardData } from "@shared/schema";
 import Dashboard from "@/pages/dashboard";
 import Chat from "@/pages/chat";
@@ -20,19 +21,20 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
-  // Use the Vite BASE_URL for the router base
-  // In dev: "/" | In production: "/InboxAI/"
-  const basePath = import.meta.env.BASE_URL;
+  // Use the trimmed base path for Wouter router
+  // CRITICAL: Wouter ignores base paths with trailing slash, so we use the trimmed version
+  // In dev: "" (empty) | In production: "/inboxai" (no trailing slash)
+  const routerBase = basePath || undefined;
   
   // CRITICAL DEBUG LOG - Check router base at runtime
   if (typeof window !== 'undefined') {
     console.log(
-      `[ROUTER DEBUG] BASE_URL from Vite: "${basePath}" | NODE_ENV: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
+      `[ROUTER DEBUG] basePath: "${basePath}" | routerBase: "${routerBase}" | MODE: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
     );
   }
   
   return (
-    <WouterRouter base={basePath}>
+    <WouterRouter base={routerBase}>
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/chat" component={Chat} />
