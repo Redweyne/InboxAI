@@ -318,3 +318,8 @@
 [x] 312. Wouter now receives base="/inboxai" (no trailing slash) which works correctly
 [x] 313. Build verified - Production JS correctly uses trimmed basePath for router
 [x] 314. VPS navigation fix completed - Ready for deployment
+[x] 315. User fixed database password - Dashboard now loads on VPS
+[x] 316. ROOT CAUSE FOUND - AppSidebar was OUTSIDE WouterRouter context, so Link components ignored base path
+[x] 317. Fixed App.tsx - Moved WouterRouter to wrap entire app including sidebar
+[x] 318. Build successful - Sidebar links now have access to router base path context
+[x] 319. Navigation fix ready for VPS deployment

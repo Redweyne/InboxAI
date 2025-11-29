@@ -20,31 +20,29 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
-function Router() {
-  // Use the trimmed base path for Wouter router
-  // CRITICAL: Wouter ignores base paths with trailing slash, so we use the trimmed version
-  // In dev: "" (empty) | In production: "/inboxai" (no trailing slash)
-  const routerBase = basePath || undefined;
-  
-  // CRITICAL DEBUG LOG - Check router base at runtime
-  if (typeof window !== 'undefined') {
-    console.log(
-      `[ROUTER DEBUG] basePath: "${basePath}" | routerBase: "${routerBase}" | MODE: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
-    );
-  }
-  
+// Get router base - must be calculated at module level so all components can access it
+// CRITICAL: Wouter ignores base paths with trailing slash, so we use the trimmed version
+// In dev: "" (empty) | In production: "/inboxai" (no trailing slash)
+const routerBase = basePath || undefined;
+
+// Log once on module load
+if (typeof window !== 'undefined') {
+  console.log(
+    `[ROUTER DEBUG] basePath: "${basePath}" | routerBase: "${routerBase}" | MODE: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
+  );
+}
+
+function Routes() {
   return (
-    <WouterRouter base={routerBase}>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/chat" component={Chat} />
-        <Route path="/inbox" component={Inbox} />
-        <Route path="/calendar" component={Calendar} />
-        <Route path="/analytics" component={Analytics} />
-        <Route path="/settings" component={Settings} />
-        <Route component={NotFound} />
-      </Switch>
-    </WouterRouter>
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/chat" component={Chat} />
+      <Route path="/inbox" component={Inbox} />
+      <Route path="/calendar" component={Calendar} />
+      <Route path="/analytics" component={Analytics} />
+      <Route path="/settings" component={Settings} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
@@ -118,20 +116,22 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SidebarProvider style={style as React.CSSProperties}>
-          <div className="flex h-screen w-full">
-            <AppSidebar />
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <header className="border-b border-border bg-background">
-                <AppHeader />
-                <SyncBanner />
-              </header>
-              <main className="flex-1 overflow-hidden">
-                <Router />
-              </main>
+        <WouterRouter base={routerBase}>
+          <SidebarProvider style={style as React.CSSProperties}>
+            <div className="flex h-screen w-full">
+              <AppSidebar />
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <header className="border-b border-border bg-background">
+                  <AppHeader />
+                  <SyncBanner />
+                </header>
+                <main className="flex-1 overflow-hidden">
+                  <Routes />
+                </main>
+              </div>
             </div>
-          </div>
-        </SidebarProvider>
+          </SidebarProvider>
+        </WouterRouter>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
