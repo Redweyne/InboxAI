@@ -84,10 +84,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // OAuth callback
   apiRouter.get("/auth/google/callback", async (req, res) => {
     try {
+      console.log('🔄 OAuth callback received');
+      console.log('   Query params:', JSON.stringify(req.query));
+      
+      // Check for error from Google
+      if (req.query.error) {
+        console.error('❌ Google OAuth error:', req.query.error);
+        console.error('   Error description:', req.query.error_description);
+        return res.status(400).send(`Google OAuth error: ${req.query.error} - ${req.query.error_description || 'No description'}`);
+      }
+      
       const code = req.query.code as string;
       if (!code) {
+        console.error('❌ No authorization code in callback');
         return res.status(400).send('Missing authorization code');
       }
+      
+      console.log('✅ Authorization code received, exchanging for tokens...');
       
       const tokens = await handleAuthCallback(code);
       // Also set tokens for calendar client
