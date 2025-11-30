@@ -32,8 +32,18 @@ export interface CalendarAction {
 export type AIAction = EmailAction | EmailModifyAction | CalendarAction;
 
 export async function executeSendEmail(action: EmailAction): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  console.log('[AI-ACTION] executeSendEmail called with:', {
+    to: action.to,
+    subject: action.subject,
+    bodyLength: action.body?.length || 0,
+    cc: action.cc || '(none)',
+    bcc: action.bcc || '(none)',
+  });
+  
   try {
+    console.log('[AI-ACTION] Getting Gmail client...');
     const gmail = await getUncachableGmailClient();
+    console.log('[AI-ACTION] Gmail client obtained successfully');
 
     const email = [
       'Content-Type: text/plain; charset="UTF-8"\n',
@@ -52,6 +62,7 @@ export async function executeSendEmail(action: EmailAction): Promise<{ success: 
       .replace(/\//g, '_')
       .replace(/=+$/, '');
 
+    console.log('[AI-ACTION] Sending email via Gmail API...');
     const response = await gmail.users.messages.send({
       userId: 'me',
       requestBody: {
@@ -59,12 +70,14 @@ export async function executeSendEmail(action: EmailAction): Promise<{ success: 
       },
     });
 
+    console.log('[AI-ACTION] Email sent successfully! Message ID:', response.data.id);
     return {
       success: true,
       messageId: response.data.id || undefined,
     };
   } catch (error: any) {
-    console.error('Error sending email:', error);
+    console.error('[AI-ACTION] ERROR sending email:', error.message);
+    console.error('[AI-ACTION] Full error details:', JSON.stringify(error, null, 2));
     return {
       success: false,
       error: error.message || 'Failed to send email',

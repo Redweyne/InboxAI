@@ -139,8 +139,14 @@ ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  
 }
 
 async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
+  console.log('[ACTION-DETECT] Analyzing user message for actions:', userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''));
+  
   try {
-    if (!(await isAuthenticated())) {
+    const isAuth = await isAuthenticated();
+    console.log('[ACTION-DETECT] User authenticated:', isAuth);
+    
+    if (!isAuth) {
+      console.log('[ACTION-DETECT] Not authenticated, returning error');
       return {
         type: 'error',
         success: false,
@@ -182,13 +188,19 @@ Return ONLY valid JSON, no explanation.`;
     });
 
     const actionData = JSON.parse(response.text || '{"type":"none"}');
+    console.log('[ACTION-DETECT] Gemini detected action:', JSON.stringify(actionData));
     
     if (actionData.type === 'none' || !actionData.type) {
+      console.log('[ACTION-DETECT] No action detected, returning null');
       return null;
     }
 
+    console.log('[ACTION-DETECT] Action type detected:', actionData.type);
+
     if (actionData.type === 'send_email') {
+      console.log('[ACTION-DETECT] Processing send_email action...');
       if (!actionData.to || !actionData.subject || !actionData.body) {
+        console.log('[ACTION-DETECT] Missing required fields for send_email:', { to: !!actionData.to, subject: !!actionData.subject, body: !!actionData.body });
         return {
           type: 'send_email',
           success: false,
@@ -196,6 +208,7 @@ Return ONLY valid JSON, no explanation.`;
         };
       }
 
+      console.log('[ACTION-DETECT] Executing send_email to:', actionData.to);
       const result = await executeAIAction({
         type: 'send_email',
         to: actionData.to,
@@ -205,6 +218,7 @@ Return ONLY valid JSON, no explanation.`;
         bcc: actionData.bcc,
       });
 
+      console.log('[ACTION-DETECT] send_email result:', result.success ? 'SUCCESS' : 'FAILED', result.error || '');
       return {
         type: 'send_email',
         success: result.success,
