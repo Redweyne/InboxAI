@@ -53,7 +53,12 @@ export async function generateChatResponse(
   includeContext: boolean = true
 ): Promise<ChatResponse> {
   try {
-    const actionResult = await detectAndExecuteAction(userMessage);
+    // Fetch conversation history FIRST so we can pass it to action detection
+    const conversationHistory = await storage.getChatMessages();
+    const recentMessages = conversationHistory.slice(-6);
+    
+    // Pass conversation history to action detection so it understands context
+    const actionResult = await detectAndExecuteAction(userMessage, recentMessages);
     
     let contextPrompt = "";
     
@@ -102,9 +107,6 @@ ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  
       }
     }
 
-    const conversationHistory = await storage.getChatMessages();
-    const recentMessages = conversationHistory.slice(-6);
-
     const conversationContext = recentMessages.map(msg => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
@@ -138,8 +140,12 @@ ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  
   }
 }
 
-async function detectAndExecuteAction(userMessage: string): Promise<{ type: string; success: boolean; details?: string } | null> {
+async function detectAndExecuteAction(
+  userMessage: string, 
+  conversationHistory: Array<{ role: string; content: string }> = []
+): Promise<{ type: string; success: boolean; details?: string } | null> {
   console.log('[ACTION-DETECT] Analyzing user message for actions:', userMessage.substring(0, 100) + (userMessage.length > 100 ? '...' : ''));
+  console.log('[ACTION-DETECT] Conversation history length:', conversationHistory.length);
   
   try {
     const isAuth = await isAuthenticated();
@@ -154,9 +160,16 @@ async function detectAndExecuteAction(userMessage: string): Promise<{ type: stri
       };
     }
 
-    const actionDetectionPrompt = `Analyze this user message and determine if they want to perform an action. If yes, extract the action details in JSON format.
+    // Build conversation context from history
+    const historyContext = conversationHistory.length > 0 
+      ? `\n\nRecent conversation history (use this to understand context like "send it again", "that email", etc.):\n${conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}\n`
+      : '';
 
-User message: "${userMessage}"
+    const actionDetectionPrompt = `Analyze this user message and determine if they want to perform an action. If yes, extract the action details in JSON format.
+${historyContext}
+Current user message: "${userMessage}"
+
+IMPORTANT: If the user refers to a previous email they wanted to send (like "send it", "try again", "send that email"), look at the conversation history above to find the email details (to, subject, body) they mentioned earlier.
 
 Possible actions:
 1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
