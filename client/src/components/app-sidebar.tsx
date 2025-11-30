@@ -12,7 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import logoImage from "@assets/redweyne_favicon_icon_1764542517564.png";
+import logoImage from "@assets/redweyne_favicon_icon_1764544039325.png";
 
 const menuItems = [
   {
