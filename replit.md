@@ -4,10 +4,14 @@
 Inbox AI is a personal productivity assistant that helps you manage your Gmail inbox and Google Calendar with intelligent AI-powered insights. The application uses Google's Gemini AI to provide helpful responses about your emails, calendar, and schedule.
 
 ## Project Status
-**Last Updated:** November 28, 2025
+**Last Updated:** November 30, 2025
 **Status:** Production-Ready ✅
 
 ### Recent Changes
+- ✅ **Email Detail View** - Click emails to view full content with proper formatting
+- ✅ **AI Now Reads Email Content** - AI context now includes email bodies for accurate summarization
+- ✅ **Email Actions** - Mark as read, archive, and delete emails from detail view
+- ✅ **API Endpoints** - Added PATCH /emails/:id and POST /emails/modify for email updates
 - ✅ **VPS Subpath Deployment Fix** - API routes now support APP_BASE_PATH for subpath hosting
 - ✅ Fixed Express Router mounting to use dynamic base path (e.g., /inboxai/api)
 - ✅ OAuth redirect URIs now include base path for proper callback handling
