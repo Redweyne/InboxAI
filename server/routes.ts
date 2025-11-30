@@ -14,7 +14,7 @@ import {
 } from "./intelligence.js";
 import { generateChatResponse } from "./ai-service.js";
 import { executeSendEmail, executeEmailModify, executeCalendarAction } from "./ai-actions.js";
-import type { InsertEmail, InsertCalendarEvent, InsertChatMessage } from "../shared/schema.js";
+import type { InsertEmail, InsertCalendarEvent, InsertChatMessage, Email } from "../shared/schema.js";
 
 // Get base path from environment variable (e.g., "/inboxai" for VPS deployment)
 // This should match the Vite base config in production
@@ -276,6 +276,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const draft = generateDraftResponse(email);
       res.json(draft);
     } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update email locally (mark as read, etc.)
+  apiRouter.patch("/emails/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const email = await storage.updateEmail(id, updates);
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+      res.json(email);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Modify email (combines local update + Gmail API)
+  apiRouter.post("/emails/modify", async (req, res) => {
+    try {
+      const { emailId, action } = req.body;
+
+      if (!emailId || !action) {
+        return res.status(400).json({ error: "Missing required fields: emailId, action" });
+      }
+
+      const validActions = ['mark_read', 'mark_unread', 'delete', 'archive', 'star', 'unstar'];
+      if (!validActions.includes(action)) {
+        return res.status(400).json({ error: `Invalid action. Must be one of: ${validActions.join(', ')}` });
+      }
+
+      // Execute the action on Gmail
+      const result = await executeEmailModify({ type: action as any, emailId });
+      
+      // Also update local database
+      if (result.success) {
+        // Find email by messageId and update locally
+        const emails = await storage.getEmails();
+        const email = emails.find(e => e.messageId === emailId);
+        if (email) {
+          const updates: Partial<Email> = {};
+          if (action === 'mark_read') updates.isRead = true;
+          if (action === 'mark_unread') updates.isRead = false;
+          if (action === 'star') updates.isStarred = true;
+          if (action === 'unstar') updates.isStarred = false;
+          
+          if (Object.keys(updates).length > 0) {
+            await storage.updateEmail(email.id, updates);
+          }
+          
+          // For delete/archive, remove from local database
+          if (action === 'delete' || action === 'archive') {
+            await storage.deleteEmail(email.id);
+          }
+        }
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Modify email error:", error);
       res.status(500).json({ error: error.message });
     }
   });

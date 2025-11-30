@@ -68,13 +68,34 @@ export async function generateChatResponse(
       const unreadEmails = emails.filter(e => !e.isRead);
       const upcomingEvents = await storage.getUpcomingEvents(5);
 
+      // Format emails with full content for AI to read and summarize
+      const formatEmailForAI = (email: typeof emails[0]) => {
+        const body = email.body || email.snippet || '';
+        const truncatedBody = body.length > 1000 ? body.substring(0, 1000) + '...' : body;
+        return `  - ID: ${email.messageId}
+    From: ${email.from}
+    To: ${email.to}
+    Subject: ${email.subject}
+    Date: ${new Date(email.date).toLocaleString()}
+    Category: ${email.category}
+    Urgent: ${email.isUrgent ? 'Yes' : 'No'}
+    Read: ${email.isRead ? 'Yes' : 'No'}
+    Content: ${truncatedBody}`;
+      };
+
       contextPrompt = `\n\nCurrent user context:
 - Total emails: ${analytics.totalEmails}
 - Unread emails: ${analytics.unreadCount}
 - Urgent emails: ${analytics.urgentCount}
 - Upcoming events today: ${upcomingEvents.length}
-${urgentEmails.length > 0 ? `\nMost urgent emails:\n${urgentEmails.slice(0, 3).map(e => `  - ID: ${e.messageId}, From: ${e.from}, Subject: ${e.subject}`).join('\n')}` : ''}
-${upcomingEvents.length > 0 ? `\nUpcoming events:\n${upcomingEvents.map(e => `  - ${e.summary} at ${new Date(e.startTime).toLocaleString()}`).join('\n')}` : ''}`;
+
+${urgentEmails.length > 0 ? `URGENT EMAILS (need attention):\n${urgentEmails.slice(0, 5).map(formatEmailForAI).join('\n\n')}` : ''}
+
+${unreadEmails.length > 0 ? `\nUNREAD EMAILS:\n${unreadEmails.slice(0, 10).map(formatEmailForAI).join('\n\n')}` : ''}
+
+${emails.length > 0 ? `\nALL EMAILS (most recent ${Math.min(emails.length, 20)}):\n${emails.slice(0, 20).map(formatEmailForAI).join('\n\n')}` : ''}
+
+${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  - ${e.summary} at ${new Date(e.startTime).toLocaleString()}${e.description ? `\n    Description: ${e.description}` : ''}`).join('\n')}` : ''}`;
 
       if (actionResult) {
         contextPrompt += `\n\nAction just executed: ${JSON.stringify(actionResult)}`;
