@@ -190,6 +190,82 @@ API routes mounted at: /inboxai/api
 serving on port 5000
 ```
 
+## 🚨 CRITICAL: AI Response Quality Issues (MUST FIX)
+
+**Last Updated:** November 30, 2025
+**Status:** NEEDS IMMEDIATE ATTENTION - Will turn clients away!
+
+### Problem Description
+The AI chat responses are **unnatural and overly verbose**, making the assistant feel robotic and off-putting to users. Two major issues:
+
+### Issue 1: JSON Code Blocks in Responses
+The AI is dumping raw technical JSON in chat messages that users should NEVER see:
+```
+Okay, I will send that email for you.
+
+```json
+{
+  "type": "send_email",
+  "recipient": "redweynemk@gmail.com",
+  "subject": "Email Test",
+  "body": "This is an email test"
+}
+```
+```
+
+**Expected natural response:** "Done! I sent your email to redweynemk@gmail.com."
+
+### Issue 2: Overly Verbose/Formal Tone
+Instead of natural, human-like responses, the AI says things like:
+- "I'm preparing to send an email to `redweynemk@gmail.com` with the subject..."
+- "I have queued the email to be sent, but I haven't received confirmation yet that it was successfully delivered. I will let you know as soon as I have an update."
+- "I'm still waiting for confirmation on whether the email to `redweynemk@gmail.com` with the subject 'Email Test' was successfully sent. I will inform you as soon as I receive an update."
+
+**Expected natural responses:**
+- "Sending now..." → "Done, sent!"
+- "Yep, the email went through!"
+- "All good, your message is on its way."
+
+### Root Cause
+The system prompt in `server/ai-service.ts` (the `SYSTEM_CONTEXT` constant) needs to be updated to:
+1. **NEVER output JSON** in responses - the action data is for internal processing only
+2. **Use casual, conversational tone** - like texting a helpful friend
+3. **Be concise** - one short sentence confirmations, not paragraphs
+4. **Sound human** - use contractions, casual phrases, vary responses
+
+### Solution (For Next Session)
+Update the `SYSTEM_CONTEXT` in `server/ai-service.ts` to include instructions like:
+
+```
+**RESPONSE STYLE - CRITICAL:**
+1. NEVER include JSON, code blocks, or technical data in your responses
+2. Be conversational and casual - like texting a helpful friend
+3. Keep responses SHORT - one sentence when possible
+4. Use contractions (I'm, you're, it's, don't)
+5. Vary your confirmations: "Done!", "Sent!", "All set!", "Got it, on its way!"
+6. Sound human, not robotic - no formal language like "I will inform you" or "I have queued"
+7. For action confirmations: Just confirm it happened, don't describe what you're about to do
+
+GOOD examples:
+- "Sent! Your email is on its way to john@example.com."
+- "Done! I created your meeting for tomorrow at 2pm."
+- "Got it, marked as read."
+
+BAD examples (NEVER do this):
+- "I'm preparing to send an email to..."
+- "I have queued the email to be sent, but I haven't received confirmation..."
+- Showing any JSON or code blocks
+```
+
+### Files to Modify
+- `server/ai-service.ts` - Update `SYSTEM_CONTEXT` constant (around line 11-44)
+
+### Testing After Fix
+1. Clear chat history
+2. Ask: "Send an email to test@example.com saying hello"
+3. Response should be like "Sent!" not a paragraph with JSON
+4. Follow up "Did it work?" - should get "Yep, went through!" not formal updates
+
 ### CRITICAL NOTES FOR NEXT VPS DEPLOYMENT
 - **ALWAYS** use `ecosystem.config.cjs` (NOT .js) when package.json has `"type": "module"`
 - **ALWAYS** verify Nginx config path matches build APP_BASE_PATH (case-sensitive!)
