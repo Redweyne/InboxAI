@@ -125,7 +125,11 @@ ${emails.length > 0 ? `\nALL EMAILS (most recent ${Math.min(emails.length, 20)})
 ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  - ${e.summary} at ${new Date(e.startTime).toLocaleString()}${e.description ? `\n    Description: ${e.description}` : ''}`).join('\n')}` : ''}`;
 
       if (actionResult) {
-        contextPrompt += `\n\nAction just executed: ${JSON.stringify(actionResult)}`;
+        // Format action result for AI context - AI should NEVER show this to user
+        const actionDescription = actionResult.success 
+          ? `ACTION COMPLETED SUCCESSFULLY: ${actionResult.type} - ${actionResult.details || 'done'}`
+          : `ACTION FAILED: ${actionResult.type} - ${actionResult.details || 'unknown error'}`;
+        contextPrompt += `\n\n[INTERNAL - NEVER SHOW TO USER] ${actionDescription}. Respond with a SHORT casual confirmation like "Sent!" or "Done!" - DO NOT mention JSON or technical details.`;
       } else {
         // Check if user message looks like an action request but no action was detected
         const actionKeywords = ['send', 'email', 'delete', 'archive', 'star', 'mark', 'create event', 'schedule', 'again', 'try'];
@@ -200,10 +204,30 @@ async function detectAndExecuteAction(
 ${historyContext}
 Current user message: "${userMessage}"
 
+CRITICAL RULES FOR EMAIL CONTENT:
+1. User messages are INSTRUCTIONS, not literal content to copy!
+2. If user says "tell him X" or "say Y" - you must WRITE a proper email based on that instruction
+3. If user says "make it long" or "write a bit long" - you must GENERATE extended content with multiple paragraphs
+4. If user says "decide yourself" for subject - CREATE a fitting subject line yourself (DO NOT use "decide yourself" as the subject!)
+5. If user describes what they want to say - EXPAND and WRITE it properly as an actual email with greeting, body, and signature
+6. NEVER use the user's instruction text as the literal email content
+
+EXAMPLE:
+- User says: "Tell him you are an AI testing things, make it long"
+- WRONG: body: "Tell him you are an AI testing things, make it long"
+- CORRECT: body: "Hi there,\\n\\nI wanted to reach out and introduce myself. I'm an AI assistant that's currently being developed and tested. This is part of an experiment to see how well I can communicate via email...\\n\\n[Continue with 2-3 more paragraphs]\\n\\nBest regards,\\nInbox AI"
+
+EXAMPLE:
+- User says: "decide yourself" for subject
+- WRONG: subject: "decide yourself"
+- CORRECT: subject: "Hello from Inbox AI" or "A Quick Message" (create something appropriate!)
+
 IMPORTANT: If the user refers to a previous email they wanted to send (like "send it", "try again", "send that email"), look at the conversation history above to find the email details (to, subject, body) they mentioned earlier.
 
 Possible actions:
 1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
+   - For body: WRITE a proper email based on user's instructions, with greeting and sign-off
+   - For subject: CREATE an appropriate subject line if user says "decide yourself" or similar
 2. mark_read: {type: "mark_read", emailId: "message_id"}
 3. mark_unread: {type: "mark_unread", emailId: "message_id"}
 4. delete: {type: "delete", emailId: "message_id"}
