@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "NODE_ENV=production APP_BASE_PATH=/InboxAI vite build && npm run build:server",
+    "build": "NODE_ENV=production APP_BASE_PATH=/inboxai vite build && npm run build:server",
     "build:server": "NODE_ENV=production tsc -p tsconfig.server.json",
     "start": "NODE_ENV=production node dist/server/index.js",
     "check": "tsc",
