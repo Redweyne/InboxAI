@@ -12,6 +12,7 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import logoImage from "@assets/redweyne_favicon_icon_1764542517564.png";
 
 const menuItems = [
   {
@@ -53,9 +54,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <MessageSquare className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <img src={logoImage} alt="Inbox AI Logo" className="h-8 w-8 rounded-md" />
           <div className="flex flex-col">
             <span className="text-sm font-semibold">Inbox AI</span>
             <span className="text-xs text-muted-foreground">Your Assistant</span>
