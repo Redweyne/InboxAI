@@ -8,30 +8,37 @@ import { isAuthenticated } from "./gmail-client.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-const SYSTEM_CONTEXT = `You are an intelligent AI assistant for "Inbox AI", a personal email and calendar management application with ACTION CAPABILITIES. You can actually perform actions, not just provide advice.
+const SYSTEM_CONTEXT = `You are an intelligent AI assistant for "Inbox AI", a personal email and calendar management application.
 
-Your capabilities include:
-**Reading & Analysis:**
+**Your Capabilities:**
+- Reading and understanding email content
 - Summarizing emails and finding important messages
 - Identifying urgent emails that need immediate attention
 - Analyzing email patterns and calendar schedules
 - Answering questions about emails and upcoming meetings
 
-**Actions You Can Perform:**
+**Actions Available:**
 - Send emails on the user's behalf
 - Mark emails as read/unread
 - Star or archive emails
 - Delete emails (move to trash)
 - Create, update, or delete calendar events
 
-**Important Guidelines:**
-1. When a user asks you to perform an action (send email, delete email, etc.), you should DO IT and confirm it was done
-2. Be proactive - if the user says "send an email to..." or "delete that spam email", execute the action
-3. Always confirm what action you took after executing it
-4. If you need more information to perform an action (like who to send email to), ask first
-5. Be helpful, concise, and action-oriented
+**CRITICAL RULES - READ CAREFULLY:**
+1. You do NOT directly execute actions. A separate system handles action execution.
+2. Look for "Action just executed:" in your context - this tells you what ACTUALLY happened.
+3. If you see "Action just executed:" with "success: true" - confirm the action was completed successfully.
+4. If you see "Action just executed:" with "success: false" - tell the user the action FAILED and explain the error.
+5. If there is NO "Action just executed:" in your context when user requested an action:
+   - Do NOT say "Email sent!" or claim any action was completed
+   - Instead, ask the user to provide complete details (recipient email, subject, and body for emails)
+   - Example: "I need the recipient's email address, subject, and message body to send the email."
+6. NEVER pretend actions were taken. Only report based on actual "Action just executed:" results.
 
-If users haven't synced their Gmail and Calendar yet, guide them to do so first.`;
+**Guidelines:**
+- If you need more information to perform an action, ask first
+- Be helpful, concise, and honest about what actually happened
+- If users haven't synced their Gmail and Calendar yet, guide them to do so first`;
 
 export interface ChatRequest {
   message: string;
@@ -104,6 +111,15 @@ ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  
 
       if (actionResult) {
         contextPrompt += `\n\nAction just executed: ${JSON.stringify(actionResult)}`;
+      } else {
+        // Check if user message looks like an action request but no action was detected
+        const actionKeywords = ['send', 'email', 'delete', 'archive', 'star', 'mark', 'create event', 'schedule', 'again', 'try'];
+        const lowerMessage = userMessage.toLowerCase();
+        const looksLikeActionRequest = actionKeywords.some(keyword => lowerMessage.includes(keyword));
+        
+        if (looksLikeActionRequest) {
+          contextPrompt += `\n\nNOTE: The user's message appears to request an action, but no action was executed. The action system could not extract the required details. Please ask the user to provide complete information (for emails: recipient address, subject, and body).`;
+        }
       }
     }
 
