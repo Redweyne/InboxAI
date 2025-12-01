@@ -32,3 +32,4 @@
 [x] 32. Import migration 100% complete - Application ready for development
 [x] 33. Fixed favicon caching issue - Added cache-busting parameter ?v=2 to force browser refresh
 [x] 34. Rebuilt production files with updated favicon references
+[x] 35. Replaced favicon.png with user's Redweyne RW logo (cyan on black) in both source and dist
