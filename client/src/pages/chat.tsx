@@ -1,9 +1,9 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,7 @@ type ChatFormValues = z.infer<typeof chatFormSchema>;
 
 export default function Chat() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [suggestions, setSuggestions] = useState<string[]>(defaultSuggestedPrompts);
 
   const form = useForm<ChatFormValues>({
@@ -54,14 +55,21 @@ export default function Chat() {
     },
   });
 
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    if (sendMessage.isPending) {
+      setTimeout(scrollToBottom, 50);
+    }
+  }, [sendMessage.isPending, scrollToBottom]);
 
   const onSubmit = (data: ChatFormValues) => {
     if (!sendMessage.isPending) {
@@ -152,23 +160,26 @@ export default function Chat() {
 
           {sendMessage.isPending && (
             <div className="flex justify-start" data-testid="message-loading">
-              <div className="max-w-2xl rounded-2xl px-4 py-3 bg-card border border-card-border">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
-                    <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+              <div className="max-w-2xl rounded-2xl px-5 py-4 bg-card border border-card-border shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5">
+                    <Bot className="h-5 w-5 text-primary" />
+                    <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" style={{ animationDuration: "1.5s" }} />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm text-muted-foreground">Thinking...</span>
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="flex flex-col gap-2">
+                    <span className="text-sm font-medium text-foreground">Assistant is thinking</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-primary animate-[pulse_1s_ease-in-out_infinite]" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-primary animate-[pulse_1s_ease-in-out_infinite_200ms]" style={{ animationDelay: "200ms" }} />
+                      <span className="h-2.5 w-2.5 rounded-full bg-primary animate-[pulse_1s_ease-in-out_infinite_400ms]" style={{ animationDelay: "400ms" }} />
+                      <span className="ml-2 text-xs text-muted-foreground">Analyzing your request...</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
