@@ -6,9 +6,11 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        lg: ".625rem", /* 10px */
+        md: ".5rem", /* 8px */
+        sm: ".25rem", /* 4px */
+        xl: "1rem", /* 16px */
+        "2xl": "1.25rem", /* 20px */
       },
       colors: {
         // Flat / base colors (regular buttons)
@@ -81,6 +83,13 @@ export default {
           busy: "rgb(239 68 68)",
           offline: "rgb(156 163 175)",
         },
+        // Cosmic glow colors
+        glow: {
+          cyan: "hsl(var(--glow-cyan) / <alpha-value>)",
+          purple: "hsl(var(--glow-purple) / <alpha-value>)",
+          pink: "hsl(var(--glow-pink) / <alpha-value>)",
+          blue: "hsl(var(--glow-blue) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
@@ -96,10 +105,85 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.95)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "slide-in-left": {
+          from: { opacity: "0", transform: "translateX(-20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-in-right": {
+          from: { opacity: "0", transform: "translateX(20px)" },
+          to: { opacity: "1", transform: "translateX(0)" },
+        },
+        "pulse-subtle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "bounce-subtle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-4px)" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { 
+            boxShadow: "0 0 20px hsl(var(--glow-cyan) / 0.3), 0 0 40px hsl(var(--glow-cyan) / 0.15)"
+          },
+          "50%": { 
+            boxShadow: "0 0 30px hsl(var(--glow-cyan) / 0.5), 0 0 60px hsl(var(--glow-cyan) / 0.25)"
+          },
+        },
+        "gradient-x": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0px)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        "shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.5s ease-out forwards",
+        "fade-in-up": "fade-in-up 0.6s ease-out forwards",
+        "fade-in-scale": "fade-in-scale 0.4s ease-out forwards",
+        "slide-in-left": "slide-in-left 0.5s ease-out forwards",
+        "slide-in-right": "slide-in-right 0.5s ease-out forwards",
+        "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
+        "spin-slow": "spin-slow 8s linear infinite",
+        "glow-pulse": "glow-pulse 3s ease-in-out infinite",
+        "gradient-x": "gradient-x 8s ease infinite",
+        "float": "float 6s ease-in-out infinite",
+        "shimmer": "shimmer 2s infinite",
+      },
+      backdropBlur: {
+        xs: "2px",
+      },
+      boxShadow: {
+        glow: "0 0 20px hsl(var(--glow-cyan) / 0.3), 0 0 40px hsl(var(--glow-cyan) / 0.15)",
+        "glow-lg": "0 0 30px hsl(var(--glow-cyan) / 0.4), 0 0 60px hsl(var(--glow-cyan) / 0.2)",
+        "glow-purple": "0 0 20px hsl(var(--glow-purple) / 0.3), 0 0 40px hsl(var(--glow-purple) / 0.15)",
+        "glow-pink": "0 0 20px hsl(var(--glow-pink) / 0.3), 0 0 40px hsl(var(--glow-pink) / 0.15)",
+        glass: "0 8px 32px rgba(0, 0, 0, 0.1)",
+        "glass-dark": "0 8px 32px rgba(0, 200, 255, 0.08)",
       },
     },
   },

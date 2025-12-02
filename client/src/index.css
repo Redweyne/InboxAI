@@ -14,72 +14,80 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 220 0% 98%;
+  --background: 220 15% 97%;
 
-  --foreground: 220 5% 12%;
+  --foreground: 220 15% 10%;
 
-  --border: 220 6% 88%;
+  --border: 220 10% 88%;
 
-  --card: 220 2% 95%;
+  --card: 220 20% 99%;
 
-  --card-foreground: 220 5% 12%;
+  --card-foreground: 220 15% 10%;
 
-  --card-border: 220 5% 90%;
+  --card-border: 220 15% 92%;
 
-  --sidebar: 220 3% 93%;
+  --sidebar: 220 20% 96%;
 
-  --sidebar-foreground: 220 5% 12%;
+  --sidebar-foreground: 220 15% 10%;
 
-  --sidebar-border: 220 4% 88%;
+  --sidebar-border: 220 15% 90%;
 
-  --sidebar-primary: 217 91% 45%;
+  --sidebar-primary: 200 100% 45%;
 
   --sidebar-primary-foreground: 220 0% 99%;
 
-  --sidebar-accent: 220 8% 86%;
+  --sidebar-accent: 200 30% 90%;
 
-  --sidebar-accent-foreground: 220 5% 18%;
+  --sidebar-accent-foreground: 200 50% 25%;
 
-  --sidebar-ring: 217 91% 45%;
+  --sidebar-ring: 200 100% 45%;
 
-  --popover: 220 4% 91%;
+  --popover: 220 20% 98%;
 
-  --popover-foreground: 220 5% 12%;
+  --popover-foreground: 220 15% 10%;
 
-  --popover-border: 220 5% 86%;
+  --popover-border: 220 15% 88%;
 
-  --primary: 217 91% 45%;
+  --primary: 200 100% 45%;
 
   --primary-foreground: 220 0% 99%;
 
-  --secondary: 220 6% 85%;
+  --secondary: 260 60% 95%;
 
-  --secondary-foreground: 220 5% 18%;
+  --secondary-foreground: 260 40% 30%;
 
-  --muted: 220 10% 87%;
+  --muted: 220 15% 92%;
 
-  --muted-foreground: 220 4% 40%;
+  --muted-foreground: 220 10% 45%;
 
-  --accent: 220 12% 84%;
+  --accent: 200 40% 92%;
 
-  --accent-foreground: 220 5% 18%;
+  --accent-foreground: 200 50% 25%;
 
   --destructive: 0 72% 48%;
 
   --destructive-foreground: 0 0% 99%;
 
-  --input: 220 8% 75%;
-  --ring: 217 91% 45%;
-  --chart-1: 217 91% 45%;
-  --chart-2: 262 83% 58%;
-  --chart-3: 173 58% 39%;
-  --chart-4: 43 96% 56%;
-  --chart-5: 27 87% 55%;
+  --input: 220 15% 85%;
+  --ring: 200 100% 45%;
+  
+  /* Vibrant chart colors */
+  --chart-1: 200 100% 50%;
+  --chart-2: 280 85% 60%;
+  --chart-3: 160 70% 45%;
+  --chart-4: 45 100% 55%;
+  --chart-5: 340 80% 55%;
+
+  /* Cosmic theme colors */
+  --glow-cyan: 190 100% 50%;
+  --glow-purple: 280 100% 65%;
+  --glow-pink: 320 100% 60%;
+  --glow-blue: 220 100% 60%;
 
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: JetBrains Mono, Menlo, monospace;
-  --radius: .5rem; /* 8px */
+  --radius: .625rem;
   --shadow-2xs: 0px 1px 2px 0px hsl(220 6% 12% / 0.04);
   --shadow-xs: 0px 1px 2px 0px hsl(220 6% 12% / 0.06);
   --shadow-sm: 0px 2px 4px 0px hsl(220 6% 12% / 0.05), 0px 1px 2px -1px hsl(220 6% 12% / 0.05);
@@ -88,6 +96,12 @@
   --shadow-lg: 0px 10px 20px 0px hsl(220 6% 12% / 0.08), 0px 4px 8px -2px hsl(220 6% 12% / 0.07);
   --shadow-xl: 0px 16px 32px 0px hsl(220 6% 12% / 0.10), 0px 6px 12px -3px hsl(220 6% 12% / 0.08);
   --shadow-2xl: 0px 24px 48px 0px hsl(220 6% 12% / 0.12);
+  
+  /* Glass effects for light mode */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -132,67 +146,80 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 220 4% 8%;
+  --background: 230 25% 7%;
 
-  --foreground: 220 4% 92%;
+  --foreground: 220 20% 95%;
 
-  --border: 220 5% 18%;
+  --border: 230 20% 18%;
 
-  --card: 220 4% 11%;
+  --card: 230 25% 11%;
 
-  --card-foreground: 220 4% 92%;
+  --card-foreground: 220 20% 95%;
 
-  --card-border: 220 5% 16%;
+  --card-border: 230 25% 16%;
 
-  --sidebar: 220 4% 13%;
+  --sidebar: 230 30% 10%;
 
-  --sidebar-foreground: 220 4% 92%;
+  --sidebar-foreground: 220 20% 95%;
 
-  --sidebar-border: 220 5% 19%;
+  --sidebar-border: 230 25% 18%;
 
-  --sidebar-primary: 217 91% 52%;
+  --sidebar-primary: 190 100% 50%;
 
   --sidebar-primary-foreground: 220 0% 99%;
 
-  --sidebar-accent: 220 6% 20%;
+  --sidebar-accent: 230 30% 18%;
 
-  --sidebar-accent-foreground: 220 4% 92%;
+  --sidebar-accent-foreground: 190 80% 80%;
 
-  --sidebar-ring: 217 91% 52%;
+  --sidebar-ring: 190 100% 50%;
 
-  --popover: 220 4% 16%;
+  --popover: 230 25% 14%;
 
-  --popover-foreground: 220 4% 92%;
+  --popover-foreground: 220 20% 95%;
 
-  --popover-border: 220 5% 22%;
+  --popover-border: 230 25% 20%;
 
-  --primary: 217 91% 52%;
+  --primary: 190 100% 50%;
 
-  --primary-foreground: 220 0% 99%;
+  --primary-foreground: 230 30% 5%;
 
-  --secondary: 220 5% 22%;
+  --secondary: 280 60% 20%;
 
-  --secondary-foreground: 220 4% 92%;
+  --secondary-foreground: 280 60% 85%;
 
-  --muted: 220 8% 18%;
+  --muted: 230 20% 18%;
 
-  --muted-foreground: 220 4% 65%;
+  --muted-foreground: 220 15% 60%;
 
-  --accent: 220 10% 19%;
+  --accent: 230 30% 20%;
 
-  --accent-foreground: 220 4% 92%;
+  --accent-foreground: 190 80% 80%;
 
-  --destructive: 0 72% 48%;
+  --destructive: 0 72% 50%;
 
   --destructive-foreground: 0 0% 99%;
 
-  --input: 220 8% 32%;
-  --ring: 217 91% 52%;
-  --chart-1: 217 91% 60%;
-  --chart-2: 262 83% 68%;
-  --chart-3: 173 58% 55%;
-  --chart-4: 43 96% 65%;
-  --chart-5: 27 87% 65%;
+  --input: 230 25% 25%;
+  --ring: 190 100% 50%;
+  
+  /* Vibrant chart colors for dark mode */
+  --chart-1: 190 100% 60%;
+  --chart-2: 280 85% 70%;
+  --chart-3: 160 70% 55%;
+  --chart-4: 45 100% 65%;
+  --chart-5: 340 80% 65%;
+
+  /* Cosmic glow colors - more vivid in dark mode */
+  --glow-cyan: 190 100% 60%;
+  --glow-purple: 280 100% 70%;
+  --glow-pink: 320 100% 65%;
+  --glow-blue: 220 100% 65%;
+
+  /* Glass effects for dark mode */
+  --glass-bg: rgba(15, 20, 35, 0.6);
+  --glass-border: rgba(100, 200, 255, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 200, 255, 0.08);
 
   --shadow-2xs: 0px 1px 2px 0px hsl(220 0% 0% / 0.20);
   --shadow-xs: 0px 1px 2px 0px hsl(220 0% 0% / 0.28);
@@ -242,26 +269,279 @@
   }
 }
 
-/**
- * Using the elevate system.
- * Automatic contrast adjustment.
- *
- * <element className="hover-elevate" />
- * <element className="active-elevate-2" />
- *
- * // Using the tailwind utility when a data attribute is "on"
- * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
- * // Or manually controlling the toggle state
- * <element className="toggle-elevate toggle-elevated" />
- *
- * Elevation systems have to handle many states.
- * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
- * - toggled or not
- * - focused or not (this is not handled with these utilities)
- *
- * Even without handling focused or not, this is six possible combinations that
- * need to be distinguished from eachother visually.
- */
+/* ========================================
+   COSMIC NEBULA THEME - Animated Background
+   ======================================== */
+
+/* Aurora/Nebula animated background */
+.cosmic-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background: hsl(var(--background));
+}
+
+.cosmic-bg::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: 
+    radial-gradient(ellipse 80% 50% at 20% 40%, hsl(var(--glow-cyan) / 0.15), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, hsl(var(--glow-purple) / 0.12), transparent 50%),
+    radial-gradient(ellipse 50% 60% at 60% 80%, hsl(var(--glow-pink) / 0.10), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 10% 90%, hsl(var(--glow-blue) / 0.08), transparent 50%);
+  animation: aurora 25s ease-in-out infinite alternate;
+}
+
+.cosmic-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 50% 50%, transparent 0%, hsl(var(--background) / 0.3) 100%);
+}
+
+@keyframes aurora {
+  0% {
+    transform: translate(0%, 0%) rotate(0deg) scale(1);
+  }
+  33% {
+    transform: translate(5%, -5%) rotate(3deg) scale(1.02);
+  }
+  66% {
+    transform: translate(-3%, 3%) rotate(-2deg) scale(0.98);
+  }
+  100% {
+    transform: translate(2%, -2%) rotate(1deg) scale(1.01);
+  }
+}
+
+/* ========================================
+   GLASSMORPHISM UTILITIES
+   ======================================== */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-subtle {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(150%);
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), 0 0 40px hsl(var(--glow-cyan) / 0.05);
+}
+
+/* ========================================
+   GLOW EFFECTS
+   ======================================== */
+
+.glow-cyan {
+  box-shadow: 
+    0 0 20px hsl(var(--glow-cyan) / 0.3),
+    0 0 40px hsl(var(--glow-cyan) / 0.15),
+    inset 0 0 20px hsl(var(--glow-cyan) / 0.05);
+}
+
+.glow-purple {
+  box-shadow: 
+    0 0 20px hsl(var(--glow-purple) / 0.3),
+    0 0 40px hsl(var(--glow-purple) / 0.15),
+    inset 0 0 20px hsl(var(--glow-purple) / 0.05);
+}
+
+.glow-pink {
+  box-shadow: 
+    0 0 20px hsl(var(--glow-pink) / 0.3),
+    0 0 40px hsl(var(--glow-pink) / 0.15),
+    inset 0 0 20px hsl(var(--glow-pink) / 0.05);
+}
+
+.glow-subtle {
+  box-shadow: 
+    0 0 15px hsl(var(--glow-cyan) / 0.15),
+    0 0 30px hsl(var(--glow-cyan) / 0.08);
+}
+
+/* Text glow */
+.text-glow {
+  text-shadow: 0 0 20px hsl(var(--glow-cyan) / 0.5), 0 0 40px hsl(var(--glow-cyan) / 0.3);
+}
+
+/* ========================================
+   GRADIENT TEXT
+   ======================================== */
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--glow-cyan)), hsl(var(--glow-purple)), hsl(var(--glow-pink)));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.gradient-text-static {
+  background: linear-gradient(135deg, hsl(var(--glow-cyan)), hsl(var(--glow-purple)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ========================================
+   ANIMATED BORDERS
+   ======================================== */
+
+.border-glow {
+  position: relative;
+}
+
+.border-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, hsl(var(--glow-cyan) / 0.5), hsl(var(--glow-purple) / 0.5), hsl(var(--glow-pink) / 0.3));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.border-glow-animated::before {
+  background: linear-gradient(135deg, hsl(var(--glow-cyan)), hsl(var(--glow-purple)), hsl(var(--glow-pink)), hsl(var(--glow-cyan)));
+  background-size: 300% 300%;
+  animation: border-rotate 4s linear infinite;
+}
+
+@keyframes border-rotate {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+
+/* ========================================
+   FLOATING ANIMATION
+   ======================================== */
+
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ========================================
+   PULSE GLOW ANIMATION
+   ======================================== */
+
+.pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px hsl(var(--glow-cyan) / 0.3),
+      0 0 40px hsl(var(--glow-cyan) / 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px hsl(var(--glow-cyan) / 0.5),
+      0 0 60px hsl(var(--glow-cyan) / 0.25);
+  }
+}
+
+/* ========================================
+   SHIMMER EFFECT
+   ======================================== */
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--glow-cyan) / 0.1),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* ========================================
+   ICON CONTAINER WITH GRADIENT BG
+   ======================================== */
+
+.icon-glow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(var(--glow-cyan) / 0.15), hsl(var(--glow-purple) / 0.15));
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 20px hsl(var(--glow-cyan) / 0.2);
+}
+
+/* ========================================
+   STAT CARD ENHANCEMENTS
+   ======================================== */
+
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, hsl(var(--glow-cyan) / 0.1) 0%, transparent 70%);
+  transform: translate(30%, -30%);
+}
+
+/* ========================================
+   EXISTING ELEVATION SYSTEM
+   ======================================== */
+
 @layer utilities {
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
@@ -351,5 +631,51 @@
   .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--glow-cyan) / 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--glow-cyan) / 0.4);
+}
+
+/* ========================================
+   REDUCED MOTION SUPPORT
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-bg::before,
+  .gradient-text,
+  .border-glow-animated::before,
+  .float,
+  .float-delayed,
+  .pulse-glow,
+  .shimmer::after {
+    animation: none;
   }
 }

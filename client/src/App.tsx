@@ -8,7 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SyncBanner } from "@/components/sync-banner";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { basePath } from "@/lib/base-path";
 import type { DashboardData } from "@shared/schema";
@@ -20,12 +20,8 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
-// Get router base - must be calculated at module level so all components can access it
-// CRITICAL: Wouter ignores base paths with trailing slash, so we use the trimmed version
-// In dev: "" (empty) | In production: "/inboxai" (no trailing slash)
 const routerBase = basePath || undefined;
 
-// Log once on module load
 if (typeof window !== 'undefined') {
   console.log(
     `[ROUTER DEBUG] basePath: "${basePath}" | routerBase: "${routerBase}" | MODE: "${import.meta.env.MODE}" | Current URL: "${window.location.pathname}"`
@@ -79,13 +75,22 @@ function AppHeader() {
   });
 
   return (
-    <div className="flex items-center justify-between gap-2 p-4">
-      <SidebarTrigger data-testid="button-sidebar-toggle" />
+    <div className="flex items-center justify-between gap-4 p-4">
+      <div className="flex items-center gap-3">
+        <SidebarTrigger 
+          data-testid="button-sidebar-toggle" 
+          className="text-foreground/70 hover:text-foreground transition-colors"
+        />
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20">
+          <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse-subtle" />
+          <span className="text-xs font-medium text-primary">AI-Powered</span>
+        </div>
+      </div>
       <div className="flex items-center gap-3">
         {authStatus?.authenticated && (
           <>
             {dashboard?.userEmail && (
-              <span className="text-sm text-muted-foreground" data-testid="header-user-email">
+              <span className="hidden md:block text-sm text-muted-foreground" data-testid="header-user-email">
                 {dashboard.userEmail}
               </span>
             )}
@@ -95,9 +100,10 @@ function AppHeader() {
               onClick={() => logout.mutate()}
               disabled={logout.isPending}
               data-testid="button-logout-header"
+              className="text-muted-foreground hover:text-foreground"
             >
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </>
         )}
@@ -107,25 +113,34 @@ function AppHeader() {
   );
 }
 
+function CosmicBackground() {
+  return (
+    <div className="cosmic-bg" aria-hidden="true">
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-background/50 to-background" />
+    </div>
+  );
+}
+
 export default function App() {
   const style = {
     "--sidebar-width": "16rem",
-    "--sidebar-width-icon": "3rem",
+    "--sidebar-width-icon": "3.5rem",
   };
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={routerBase}>
+          <CosmicBackground />
           <SidebarProvider style={style as React.CSSProperties}>
-            <div className="flex h-screen w-full">
+            <div className="flex h-screen w-full relative">
               <AppSidebar />
               <div className="flex flex-col flex-1 overflow-hidden">
-                <header className="border-b border-border bg-background">
+                <header className="glass-subtle border-b border-border/50 relative z-10">
                   <AppHeader />
                   <SyncBanner />
                 </header>
-                <main className="flex-1 overflow-hidden">
+                <main className="flex-1 overflow-hidden relative">
                   <Routes />
                 </main>
               </div>
