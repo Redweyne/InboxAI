@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
 import {
   Mail,
   Calendar,
@@ -14,7 +13,8 @@ import {
   TrendingUp,
   Sparkles,
   Trash2,
-  ExternalLink,
+  Zap,
+  ArrowUpRight,
 } from "lucide-react";
 import type { DashboardData } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -68,13 +68,21 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto p-6 space-y-6" data-testid="dashboard-loading">
-        <Skeleton className="h-12 w-64" />
-        <Skeleton className="h-32 w-full" />
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32" />
-          ))}
+      <div className="h-full overflow-auto">
+        <div className="container mx-auto p-6 space-y-6" data-testid="dashboard-loading">
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-80 rounded-xl" />
+            <Skeleton className="h-6 w-48 rounded-lg" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-36 rounded-2xl" />
+            ))}
+          </div>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Skeleton className="h-80 rounded-2xl" />
+            <Skeleton className="h-80 rounded-2xl" />
+          </div>
         </div>
       </div>
     );
@@ -82,283 +90,365 @@ export default function Dashboard() {
 
   if (!dashboard) {
     return (
-      <div className="container mx-auto p-6" data-testid="dashboard-error">
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Failed to load dashboard data</AlertDescription>
-        </Alert>
+      <div className="h-full overflow-auto">
+        <div className="container mx-auto p-6" data-testid="dashboard-error">
+          <Alert className="glass rounded-2xl border-destructive/30">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>Failed to load dashboard data</AlertDescription>
+          </Alert>
+        </div>
       </div>
     );
   }
 
+  const statCards = [
+    {
+      title: "Urgent Emails",
+      value: dashboard.summary.urgentEmails,
+      description: "Need immediate attention",
+      icon: Mail,
+      gradient: "from-red-500 to-orange-500",
+      bgGlow: "rgba(239, 68, 68, 0.1)",
+      testId: "card-urgent-emails",
+      valueTestId: "text-urgent-count",
+    },
+    {
+      title: "Unread Emails",
+      value: dashboard.summary.unreadEmails,
+      description: "In your inbox",
+      icon: Mail,
+      gradient: "from-cyan-500 to-blue-500",
+      bgGlow: "rgba(6, 182, 212, 0.1)",
+      testId: "card-unread-emails",
+      valueTestId: "text-unread-count",
+    },
+    {
+      title: "Today's Meetings",
+      value: dashboard.summary.todayMeetings,
+      description: "On your schedule",
+      icon: Calendar,
+      gradient: "from-purple-500 to-pink-500",
+      bgGlow: "rgba(168, 85, 247, 0.1)",
+      testId: "card-today-meetings",
+      valueTestId: "text-meetings-count",
+    },
+    {
+      title: "Pending Tasks",
+      value: dashboard.summary.pendingTasks,
+      description: "To complete",
+      icon: CheckCircle2,
+      gradient: "from-emerald-500 to-teal-500",
+      bgGlow: "rgba(16, 185, 129, 0.1)",
+      testId: "card-pending-tasks",
+      valueTestId: "text-tasks-count",
+    },
+  ];
+
   const priorityColors = {
-    high: "bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-800",
-    medium: "bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800",
-    low: "bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800",
+    high: "bg-gradient-to-r from-red-500/10 to-orange-500/10 border-red-500/30 dark:border-red-500/20",
+    medium: "bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/30 dark:border-yellow-500/20",
+    low: "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/30 dark:border-blue-500/20",
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6" data-testid="dashboard-container">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white" data-testid="dashboard-greeting">
-            {dashboard.greeting}! 👋
-          </h1>
-          {dashboard.userEmail && (
-            <p className="text-sm text-gray-500 dark:text-gray-500 mt-1" data-testid="dashboard-user-email">
-              {dashboard.userEmail}
+    <div className="h-full overflow-auto">
+      <div className="container mx-auto p-6 space-y-8" data-testid="dashboard-container">
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div className="space-y-2 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl md:text-5xl font-bold" data-testid="dashboard-greeting">
+                <span className="gradient-text">{dashboard.greeting}!</span>
+                <span className="ml-3 inline-block animate-float">👋</span>
+              </h1>
+            </div>
+            <p className="text-lg text-muted-foreground flex items-center gap-2" data-testid="dashboard-date">
+              <Clock className="h-4 w-4" />
+              {dashboard.date}
             </p>
-          )}
-          <p className="text-lg text-gray-600 dark:text-gray-400 mt-1" data-testid="dashboard-date">
-            {dashboard.date}
-          </p>
+          </div>
+          <div className="flex flex-wrap gap-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <Button
+              onClick={() => clearDataMutation.mutate()}
+              disabled={clearDataMutation.isPending}
+              variant="outline"
+              data-testid="button-clear-data"
+              className="glass-subtle rounded-xl border-border/50 hover:border-destructive/50 hover:text-destructive transition-all duration-300"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear All Data
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => clearDataMutation.mutate()}
-            disabled={clearDataMutation.isPending}
-            variant="outline"
-            data-testid="button-clear-data"
+
+        {/* Stat Cards */}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((stat, index) => (
+            <Card 
+              key={stat.title}
+              className="group glass rounded-2xl border-border/30 overflow-hidden transition-all duration-500 hover:shadow-glow hover:scale-[1.02] animate-fade-in-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+              data-testid={stat.testId}
+            >
+              <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                style={{ background: `radial-gradient(circle at 50% 0%, ${stat.bgGlow}, transparent 70%)` }}
+              />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+                <div className={`p-2 rounded-xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
+                  <stat.icon className="h-4 w-4 text-white" />
+                </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <div className="text-3xl font-bold mb-1" data-testid={stat.valueTestId}>
+                  {stat.value}
+                </div>
+                <p className="text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Insights Alert */}
+        {dashboard.insights && dashboard.insights.length > 0 && (
+          <div 
+            className="glass rounded-2xl p-4 border border-primary/20 relative overflow-hidden animate-fade-in"
+            style={{ animationDelay: '400ms' }}
+            data-testid="alert-insights"
           >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Clear All Data
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card data-testid="card-urgent-emails">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Urgent Emails</CardTitle>
-            <Mail className="h-4 w-4 text-red-600 dark:text-red-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-urgent-count">
-              {dashboard.summary.urgentEmails}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Need immediate attention</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-unread-emails">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unread Emails</CardTitle>
-            <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-unread-count">
-              {dashboard.summary.unreadEmails}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">In your inbox</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-today-meetings">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Meetings</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-meetings-count">
-              {dashboard.summary.todayMeetings}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">On your schedule</p>
-          </CardContent>
-        </Card>
-
-        <Card data-testid="card-pending-tasks">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-tasks-count">
-              {dashboard.summary.pendingTasks}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">To complete</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Insights */}
-      {dashboard.insights && dashboard.insights.length > 0 && (
-        <Alert className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800" data-testid="alert-insights">
-          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <AlertDescription className="text-gray-900 dark:text-gray-100">
-            <div className="flex items-start gap-2">
-              <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-              <div className="flex-1">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-purple-500/5 to-pink-500/5" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl" />
+            <div className="relative flex items-start gap-4">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-primary to-purple-500 shadow-lg flex-shrink-0">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">AI Insights</span>
+                </div>
                 {dashboard.insights.map((insight, i) => (
-                  <p key={i} className="text-sm" data-testid={`text-insight-${i}`}>
+                  <p key={i} className="text-sm text-muted-foreground" data-testid={`text-insight-${i}`}>
                     {insight}
                   </p>
                 ))}
               </div>
             </div>
-          </AlertDescription>
-        </Alert>
-      )}
+          </div>
+        )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Urgent Items */}
-        <Card data-testid="card-urgent-items">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
-              Priority Items
-            </CardTitle>
-            <CardDescription>Items that need your attention today</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {dashboard.urgentItems.length === 0 ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8" data-testid="text-no-urgent">
-                No urgent items. You're all caught up! 🎉
-              </p>
-            ) : (
-              dashboard.urgentItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  className={`p-4 rounded-lg border-2 ${priorityColors[item.priority]}`}
-                  data-testid={`item-urgent-${index}`}
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-xs" data-testid={`badge-type-${item.type}`}>
-                          {item.type}
-                        </Badge>
-                        {item.time && (
-                          <span className="text-xs flex items-center gap-1 text-gray-600 dark:text-gray-400">
-                            <Clock className="h-3 w-3" />
-                            {item.time}
-                          </span>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Priority Items */}
+          <Card 
+            className="glass rounded-2xl border-border/30 overflow-hidden animate-fade-in-up"
+            style={{ animationDelay: '500ms' }}
+            data-testid="card-urgent-items"
+          >
+            <CardHeader className="border-b border-border/30">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg">
+                  <AlertCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle>Priority Items</CardTitle>
+                  <CardDescription>Items that need your attention today</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 space-y-3 max-h-[400px] overflow-auto">
+              {dashboard.urgentItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="p-4 rounded-full bg-emerald-500/10 mb-4">
+                    <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground" data-testid="text-no-urgent">
+                    No urgent items
+                  </p>
+                  <p className="text-xs text-muted-foreground">You're all caught up!</p>
+                </div>
+              ) : (
+                dashboard.urgentItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`group p-4 rounded-xl border-2 ${priorityColors[item.priority]} backdrop-blur-sm transition-all duration-300 hover:scale-[1.01]`}
+                    data-testid={`item-urgent-${index}`}
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <Badge variant="outline" className="text-xs rounded-full" data-testid={`badge-type-${item.type}`}>
+                            {item.type}
+                          </Badge>
+                          {item.time && (
+                            <span className="text-xs flex items-center gap-1 text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {item.time}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-semibold text-sm mb-1 line-clamp-1" data-testid={`text-title-${index}`}>
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2" data-testid={`text-description-${index}`}>
+                          {item.description}
+                        </p>
+                        {item.from && (
+                          <p className="text-xs text-muted-foreground mt-1">From: {item.from}</p>
                         )}
                       </div>
-                      <h4 className="font-semibold text-sm mb-1" data-testid={`text-title-${index}`}>
-                        {item.title}
-                      </h4>
-                      <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2" data-testid={`text-description-${index}`}>
-                        {item.description}
-                      </p>
-                      {item.from && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">From: {item.from}</p>
-                      )}
                     </div>
+                    {item.quickActions && item.quickActions.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/30">
+                        {item.quickActions.map((qa, qaIndex) => (
+                          <Button
+                            key={qaIndex}
+                            size="sm"
+                            variant={qa.variant || "default"}
+                            onClick={() => handleQuickAction(qa.action, item.id, item.type)}
+                            className="rounded-lg text-xs"
+                            data-testid={`button-action-${qa.action}-${index}`}
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            {qa.label}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {item.quickActions && item.quickActions.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {item.quickActions.map((qa, qaIndex) => (
-                        <Button
-                          key={qaIndex}
-                          size="sm"
-                          variant={qa.variant || "default"}
-                          onClick={() => handleQuickAction(qa.action, item.id, item.type)}
-                          data-testid={`button-action-${qa.action}-${index}`}
-                        >
-                          {qa.label}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Right Column - Schedule and Tasks */}
+          <div className="space-y-6">
+            {/* Today's Schedule */}
+            <Card 
+              className="glass rounded-2xl border-border/30 overflow-hidden animate-fade-in-up"
+              style={{ animationDelay: '600ms' }}
+              data-testid="card-schedule"
+            >
+              <CardHeader className="border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
+                    <Calendar className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle>Today's Schedule</CardTitle>
+                    <CardDescription>Your meetings for today</CardDescription>
+                  </div>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Today's Schedule */}
-        <div className="space-y-6">
-          <Card data-testid="card-schedule">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
-                Today's Schedule
-              </CardTitle>
-              <CardDescription>Your meetings for today</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {dashboard.upcomingEvents.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8" data-testid="text-no-events">
-                  No meetings scheduled today
-                </p>
-              ) : (
-                dashboard.upcomingEvents.map((event, index) => (
-                  <div key={event.id} className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800" data-testid={`event-${index}`}>
-                    <div className="flex flex-col items-center justify-center bg-purple-100 dark:bg-purple-900/20 rounded px-2 py-1 min-w-[60px]">
-                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">{event.startTime}</span>
-                      <span className="text-xs text-purple-600 dark:text-purple-400">-</span>
-                      <span className="text-xs font-medium text-purple-700 dark:text-purple-300">{event.endTime}</span>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                {dashboard.upcomingEvents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="p-3 rounded-full bg-muted/50 mb-3">
+                      <Calendar className="h-6 w-6 text-muted-foreground" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-sm mb-1 text-gray-900 dark:text-white" data-testid={`text-event-title-${index}`}>
-                        {event.title}
-                      </h4>
-                      {event.location && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">📍 {event.location}</p>
-                      )}
-                      {event.attendees && event.attendees.length > 0 && (
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          {event.attendees.length} attendee{event.attendees.length > 1 ? 's' : ''}
-                        </p>
-                      )}
-                    </div>
+                    <p className="text-sm text-muted-foreground" data-testid="text-no-events">
+                      No meetings scheduled today
+                    </p>
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* High Priority Tasks */}
-          <Card data-testid="card-priority-tasks">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                High Priority Tasks
-              </CardTitle>
-              <CardDescription>Your top tasks to focus on</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {dashboard.topPriorityTasks.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8" data-testid="text-no-tasks">
-                  No high priority tasks
-                </p>
-              ) : (
-                dashboard.topPriorityTasks.map((task, index) => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                    data-testid={`task-${index}`}
-                  >
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm text-gray-900 dark:text-white" data-testid={`text-task-title-${index}`}>
-                        {task.title}
-                      </h4>
-                      {task.description && (
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">
-                          {task.description}
-                        </p>
-                      )}
-                      {task.dueDate && (
-                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          Due: {new Date(task.dueDate).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleQuickAction("complete", task.id, "task")}
-                      data-testid={`button-complete-task-${index}`}
+                ) : (
+                  dashboard.upcomingEvents.map((event, index) => (
+                    <div 
+                      key={event.id} 
+                      className="group flex items-start gap-4 p-3 rounded-xl bg-gradient-to-r from-purple-500/5 to-pink-500/5 border border-purple-500/10 transition-all duration-300 hover:border-purple-500/30"
+                      data-testid={`event-${index}`}
                     >
-                      Complete
-                    </Button>
+                      <div className="flex flex-col items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg px-3 py-2 min-w-[72px]">
+                        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">{event.startTime}</span>
+                        <div className="w-4 h-px bg-purple-500/30 my-1" />
+                        <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">{event.endTime}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm mb-1 line-clamp-1" data-testid={`text-event-title-${index}`}>
+                          {event.title}
+                        </h4>
+                        {event.location && (
+                          <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                            <span className="text-purple-500">@</span> {event.location}
+                          </p>
+                        )}
+                        {event.attendees && event.attendees.length > 0 && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {event.attendees.length} attendee{event.attendees.length > 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                      <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* High Priority Tasks */}
+            <Card 
+              className="glass rounded-2xl border-border/30 overflow-hidden animate-fade-in-up"
+              style={{ animationDelay: '700ms' }}
+              data-testid="card-priority-tasks"
+            >
+              <CardHeader className="border-b border-border/30">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg">
+                    <CheckCircle2 className="h-5 w-5 text-white" />
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+                  <div>
+                    <CardTitle>High Priority Tasks</CardTitle>
+                    <CardDescription>Your top tasks to focus on</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 space-y-2">
+                {dashboard.topPriorityTasks.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="p-3 rounded-full bg-muted/50 mb-3">
+                      <CheckCircle2 className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-muted-foreground" data-testid="text-no-tasks">
+                      No high priority tasks
+                    </p>
+                  </div>
+                ) : (
+                  dashboard.topPriorityTasks.map((task, index) => (
+                    <div
+                      key={task.id}
+                      className="group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-gradient-to-r from-transparent to-emerald-500/5 hover:border-emerald-500/30 transition-all duration-300"
+                      data-testid={`task-${index}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm line-clamp-1" data-testid={`text-task-title-${index}`}>
+                          {task.title}
+                        </h4>
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                            {task.description}
+                          </p>
+                        )}
+                        {task.dueDate && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Due: {new Date(task.dueDate).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleQuickAction("complete", task.id, "task")}
+                        className="rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg"
+                        data-testid={`button-complete-task-${index}`}
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                        Complete
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
