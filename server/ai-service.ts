@@ -33,12 +33,15 @@ When user wants to send an email, create events, etc:
 **WHEN DRAFTING EMAILS:**
 - Help the user compose the email step by step
 - Ask for recipient, subject, and body if not provided
-- When they provide all details, ask "Ready to send?" or similar
-- DO NOT actually send until they explicitly say "send it", "yes send", etc.
+- When you have ALL details ready (to, subject, body), ask them to confirm with a clear prompt like:
+  - "Ready to send? Just say 'send it' and I'll fire it off!"
+  - "All set! Say 'send it' when you're ready."
+  - "Got everything! Just tell me 'send it' to send this off."
+- This teaches users naturally how to confirm sending
 
-**WHAT COUNTS AS A SEND CONFIRMATION (only these):**
-- "send it", "send", "yes send", "send now", "go ahead and send", "please send"
-- NOT: "ok", "sure", "sounds good", "you decide", "that's fine"
+**WHAT COUNTS AS A SEND CONFIRMATION:**
+- "send it", "send", "yes send", "send now", "go ahead and send", "please send", "send please"
+- These work because they contain the word "send" as a command
 
 **GOOD responses:**
 - "What's the email address?"
@@ -254,18 +257,23 @@ ONLY trigger send_email if BOTH conditions are true:
 1. User's CURRENT message contains an EXPLICIT send command word
 2. All required details (to, subject, body) are available from conversation
 
-EXPLICIT SEND COMMANDS (must contain one of these EXACT patterns):
-- "send it" / "send this" / "send the email" / "send now"
-- "yes send" / "please send" / "go ahead and send"
-- "send" (as the main intent, not "can you send" which is a request)
+SEND COMMANDS - messages that trigger send_email:
+The user's message must contain "send" as an ACTION/COMMAND (not a request to help).
 
-THESE ARE NOT SEND COMMANDS - return {type: "none"}:
-- "can you send" / "could you send" / "write an email" / "draft an email" (these are REQUESTS to help)
-- "ok" / "sure" / "sounds good" / "that's fine" / "you decide" / "you can decide" (these are answers to questions)
-- "make it longer" / "change the subject" / "add more" (these are EDITS)
-- Answering a question like "What subject?" with a subject line
+VALID send commands (trigger send_email):
+- "send it" / "send this" / "send the email" / "send now" / "send please"
+- "yes send" / "please send" / "go ahead and send" / "ok send" / "yep send"
+- "send" (when it's the main intent of the message)
+- Any short confirmation containing the word "send": "yes, send", "ok, send it", "send!", "just send it"
 
-If user says "you decide" or "you can decide" for a detail - that's answering your question, NOT a send command!
+NOT send commands - return {type: "none"}:
+- "can you send" / "could you send" / "will you send" (these are QUESTIONS, not commands)
+- "write an email" / "draft an email" / "compose an email" (requests to DRAFT, not send)
+- "ok" / "sure" / "sounds good" / "that's fine" / "you decide" (answers to questions, missing "send")
+- "make it longer" / "change the subject" / "add more" (EDITS to draft)
+
+KEY RULE: If the message contains "send" as an imperative/command, it's a send command.
+If "send" is part of a question or the message lacks "send" entirely, return {type: "none"}.
 
 === EMAIL CONTENT RULES ===
 When extracting email content from conversation history:

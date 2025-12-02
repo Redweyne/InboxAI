@@ -44,3 +44,7 @@
     - Layer 2: Clear context markers [ACTION SUCCESS], [ACTION FAILED], [NO ACTION EXECUTED]
     - Layer 3: System prompt forbids JSON/code and false success claims
     - Layer 4: Post-processing sanitizer catches any leaked JSON and prevents hallucinated "Sent!" claims
+[x] 43. UX improvement: AI now naturally guides users on how to confirm sending:
+    - When email is ready, AI prompts: "Just say 'send it' when you're ready!"
+    - More flexible detection: any message containing "send" as a command works
+    - Clear distinction: "send it" = command, "can you send" = question
