@@ -48,3 +48,8 @@
     - When email is ready, AI prompts: "Just say 'send it' when you're ready!"
     - More flexible detection: any message containing "send" as a command works
     - Clear distinction: "send it" = command, "can you send" = question
+[x] 44. Improved AI loading indicator with visually appealing animation:
+    - Added sparkle icon with pulse animation
+    - "Thinking..." text label
+    - Three bouncing dots with staggered delays
+    - Much more engaging than a simple spinner

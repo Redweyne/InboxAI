@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Send, Loader2, Sparkles } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -153,7 +153,19 @@ export default function Chat() {
           {sendMessage.isPending && (
             <div className="flex justify-start" data-testid="message-loading">
               <div className="max-w-2xl rounded-2xl px-4 py-3 bg-card border border-card-border">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10">
+                    <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                    <div className="flex gap-1">
+                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="h-2 w-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
