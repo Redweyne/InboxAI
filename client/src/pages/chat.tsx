@@ -56,6 +56,7 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [suggestions, setSuggestions] = useState<string[]>(defaultSuggestedPrompts);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
 
   const form = useForm<ChatFormValues>({
     resolver: zodResolver(chatFormSchema),
@@ -75,14 +76,14 @@ export default function Chat() {
       return apiRequest("POST", "/api/chat/send", { content });
     },
     onSuccess: (data: any) => {
+      setPendingMessage(null);
       queryClient.invalidateQueries({ queryKey: ["/api/chat/messages"] });
       if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions);
       }
-      form.reset();
-      if (textareaRef.current) {
-        textareaRef.current.style.height = "auto";
-      }
+    },
+    onError: () => {
+      setPendingMessage(null);
     },
   });
 
@@ -97,14 +98,20 @@ export default function Chat() {
   }, [messages, scrollToBottom]);
 
   useEffect(() => {
-    if (sendMessage.isPending) {
+    if (pendingMessage) {
       setTimeout(scrollToBottom, 50);
     }
-  }, [sendMessage.isPending, scrollToBottom]);
+  }, [pendingMessage, scrollToBottom]);
 
   const onSubmit = (data: ChatFormValues) => {
-    if (!sendMessage.isPending) {
-      sendMessage.mutate(data.content.trim());
+    if (!sendMessage.isPending && data.content.trim()) {
+      const messageContent = data.content.trim();
+      setPendingMessage(messageContent);
+      form.reset();
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
+      sendMessage.mutate(messageContent);
     }
   };
 
@@ -214,6 +221,24 @@ export default function Chat() {
                   </div>
                 );
               })}
+
+              {pendingMessage && (
+                <div className="flex gap-3 flex-row-reverse" data-testid="message-pending">
+                  <div className="flex-shrink-0">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="flex flex-col gap-1 max-w-[75%] items-end">
+                    <div className="rounded-2xl px-4 py-2.5 bg-primary text-primary-foreground rounded-br-md">
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{pendingMessage}</p>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground px-1">Sending...</span>
+                  </div>
+                </div>
+              )}
 
               {sendMessage.isPending && (
                 <div className="flex gap-3" data-testid="message-loading">
