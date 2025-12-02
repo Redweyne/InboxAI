@@ -204,7 +204,21 @@ async function detectAndExecuteAction(
 ${historyContext}
 Current user message: "${userMessage}"
 
-CRITICAL RULES FOR EMAIL CONTENT:
+CRITICAL: EXPLICIT CONFIRMATION REQUIRED FOR SENDING EMAILS
+You MUST return {type: "none"} unless the user's CURRENT message is an EXPLICIT confirmation to send.
+- EXPLICIT confirmations (ONLY these trigger send_email): "send it", "yes send", "send", "yep send it", "go ahead", "send now", "ok send", "yes go ahead"
+- NOT confirmations (return {type: "none"}): "write an email", "draft an email", "make it longer", "change the subject", "you decide", "whatever", "sounds good", "that's better", "ok", "good"
+
+DO NOT send emails when:
+- User is asking to WRITE/DRAFT an email (they want a draft, not to send yet)
+- User is making EDITS to the email content
+- User is answering questions about email details
+- User says "ok" or "good" or "sounds good" (these are acknowledgements, NOT send confirmations)
+
+ONLY send emails when:
+- User's CURRENT message explicitly says to SEND (like "send it", "yes send", "go ahead and send")
+
+CRITICAL RULES FOR EMAIL CONTENT (only apply when user confirms sending):
 1. User messages are INSTRUCTIONS, not literal content to copy!
 2. If user says "tell him X" or "say Y" - you must WRITE a proper email based on that instruction
 3. If user says "make it long" or "write a bit long" - you must GENERATE extended content with multiple paragraphs
@@ -212,20 +226,11 @@ CRITICAL RULES FOR EMAIL CONTENT:
 5. If user describes what they want to say - EXPAND and WRITE it properly as an actual email with greeting, body, and signature
 6. NEVER use the user's instruction text as the literal email content
 
-EXAMPLE:
-- User says: "Tell him you are an AI testing things, make it long"
-- WRONG: body: "Tell him you are an AI testing things, make it long"
-- CORRECT: body: "Hi there,\\n\\nI wanted to reach out and introduce myself. I'm an AI assistant that's currently being developed and tested. This is part of an experiment to see how well I can communicate via email...\\n\\n[Continue with 2-3 more paragraphs]\\n\\nBest regards,\\nInbox AI"
-
-EXAMPLE:
-- User says: "decide yourself" for subject
-- WRONG: subject: "decide yourself"
-- CORRECT: subject: "Hello from Inbox AI" or "A Quick Message" (create something appropriate!)
-
-IMPORTANT: If the user refers to a previous email they wanted to send (like "send it", "try again", "send that email"), look at the conversation history above to find the email details (to, subject, body) they mentioned earlier.
+IMPORTANT: Only look at conversation history to find email details (to, subject, body) when the user EXPLICITLY confirms sending with words like "send it", "yes send", "go ahead".
 
 Possible actions:
 1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
+   - ONLY trigger this when user EXPLICITLY says to send (see confirmation rules above)
    - For body: WRITE a proper email based on user's instructions, with greeting and sign-off
    - For subject: CREATE an appropriate subject line if user says "decide yourself" or similar
 2. mark_read: {type: "mark_read", emailId: "message_id"}
@@ -238,7 +243,7 @@ Possible actions:
 9. update_event: {type: "update_event", eventId: "event_id", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
 10. delete_event: {type: "delete_event", eventId: "event_id"}
 
-If no action is requested, return: {type: "none"}
+If no action is requested or user hasn't explicitly confirmed sending, return: {type: "none"}
 
 Return ONLY valid JSON, no explanation.`;
 

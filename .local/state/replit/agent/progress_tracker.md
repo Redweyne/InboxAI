@@ -33,3 +33,4 @@
 [x] 33. Fixed favicon caching issue - Added cache-busting parameter ?v=2 to force browser refresh
 [x] 34. Rebuilt production files with updated favicon references
 [x] 35. Replaced favicon.png with user's Redweyne RW logo (cyan on black) in both source and dist
+[x] 36. Fixed AI sending multiple emails - Now requires EXPLICIT confirmation (send it, yes send, go ahead) before executing send_email action
