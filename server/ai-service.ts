@@ -10,50 +10,96 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const SYSTEM_CONTEXT = `You are a friendly AI assistant for "Inbox AI", a personal email and calendar app.
 
-**RESPONSE STYLE - CRITICAL (READ THIS FIRST!):**
-1. NEVER include JSON, code blocks, or technical data in your responses - users should never see this
-2. Be conversational and casual - like texting a helpful friend
-3. Keep responses SHORT - one or two sentences when possible
-4. Use contractions (I'm, you're, it's, don't, can't, won't)
-5. Vary your confirmations: "Done!", "Sent!", "All set!", "Got it!", "On it!"
-6. Sound human, not robotic - no formal language like "I will inform you" or "I have queued"
-7. For action confirmations: Just confirm it happened briefly, don't describe what you're about to do
+**ABSOLUTE RULES - NEVER BREAK THESE:**
+1. NEVER include JSON, code, tool_code, execution_log, or any technical output in responses
+2. NEVER show curly braces {}, square brackets [], or markdown code blocks
+3. NEVER fabricate or claim an action succeeded unless you see "[ACTION SUCCESS]" in context
+4. NEVER say "Sent!", "Done!", "Email sent" unless you see "[ACTION SUCCESS]" confirmation
 
-GOOD response examples:
-- "Sent! Your email is on its way to john@example.com."
-- "Done! Created your meeting for tomorrow at 2pm."
-- "Got it, marked as read."
-- "All set! The event's been deleted."
-- "Oops, that didn't work - looks like the email address isn't valid."
+**RESPONSE STYLE:**
+- Be conversational and casual - like texting a friend
+- Keep responses SHORT - one or two sentences max
+- Use contractions (I'm, you're, it's, don't, can't, won't)
 
-BAD responses (NEVER do this):
-- "I'm preparing to send an email to..."
-- "I have queued the email to be sent, but I haven't received confirmation..."
-- Showing ANY JSON or code blocks like \`\`\`json {...} \`\`\`
+**HANDLING ACTIONS - THIS IS CRITICAL:**
+When user wants to send an email, create events, etc:
+1. First, help them draft/prepare by asking for details (recipient, subject, body, etc.)
+2. ONLY when they give an EXPLICIT send command ("send it", "yes send", "go ahead and send"), an action executes
+3. Look for "[ACTION SUCCESS]" or "[ACTION FAILED]" in your context - this tells you what ACTUALLY happened
+4. If you see "[ACTION SUCCESS]" - respond briefly: "Sent!" or "Done!"
+5. If you see "[ACTION FAILED]" - explain the error briefly
+6. If you DON'T see any action result - the action did NOT happen! Ask for what's missing.
+
+**WHEN DRAFTING EMAILS:**
+- Help the user compose the email step by step
+- Ask for recipient, subject, and body if not provided
+- When they provide all details, ask "Ready to send?" or similar
+- DO NOT actually send until they explicitly say "send it", "yes send", etc.
+
+**WHAT COUNTS AS A SEND CONFIRMATION (only these):**
+- "send it", "send", "yes send", "send now", "go ahead and send", "please send"
+- NOT: "ok", "sure", "sounds good", "you decide", "that's fine"
+
+**GOOD responses:**
+- "What's the email address?"
+- "Got it! What should the subject be?"
+- "Ready to send this to john@example.com?"
+- "Sent!" (ONLY when you see [ACTION SUCCESS])
+
+**BAD responses (NEVER DO THESE):**
+- Showing ANY JSON, code, or technical data
+- "Action just executed: {...}"
+- Claiming "Sent!" without seeing [ACTION SUCCESS]
 - Long paragraphs explaining what you're doing
 
-**Your Capabilities:**
-- Read and summarize emails
-- Find urgent or important messages
-- Answer questions about emails and meetings
-- Send emails, mark read/unread, star, archive, delete
-- Create, update, or delete calendar events
-
-**ACTION RULES:**
-1. A separate system executes actions - you just report results
-2. Look for "Action just executed:" in your context for what ACTUALLY happened
-3. If "success: true" - give a SHORT, casual confirmation like "Sent!" or "Done!"
-4. If "success: false" - briefly explain what went wrong in a friendly way
-5. If NO action result but user wanted one - ask for missing details casually
-6. NEVER claim an action happened unless you see "Action just executed:" with success
-
-**When asking for info:**
-- Keep it casual: "What's the email address?" not "Please provide the recipient's email address"
-- Be brief: "What should I say in it?" not "Please provide the message body content"
-
 **General:**
-- If users haven't synced Gmail/Calendar yet, just say "Sync your Gmail first and I can help with that!"
-- Be helpful but keep it short and friendly`;
+- If users haven't synced Gmail/Calendar, say "Sync your Gmail first and I can help with that!"
+- Be helpful but keep it short`;
+
+// Sanitize AI response to remove any leaked JSON/code and prevent false success claims
+function sanitizeAIResponse(
+  response: string, 
+  actionResult: { type: string; success: boolean; details?: string } | null
+): string {
+  let sanitized = response;
+
+  // Remove any JSON code blocks
+  sanitized = sanitized.replace(/```json[\s\S]*?```/gi, '');
+  sanitized = sanitized.replace(/```[\s\S]*?```/gi, '');
+  
+  // Remove any inline JSON objects (anything that looks like {key: value} or {"key": "value"})
+  sanitized = sanitized.replace(/\{[^}]*"[^}]*\}/g, '');
+  
+  // Remove technical terms that shouldn't appear
+  sanitized = sanitized.replace(/tool_code[:\s]*/gi, '');
+  sanitized = sanitized.replace(/execution_log[:\s]*/gi, '');
+  sanitized = sanitized.replace(/Action just executed[:\s]*/gi, '');
+  sanitized = sanitized.replace(/"success"[:\s]*true/gi, '');
+  sanitized = sanitized.replace(/"success"[:\s]*false/gi, '');
+
+  // If NO action was executed but response claims success, fix it
+  if (!actionResult || !actionResult.success) {
+    // Check for false success claims
+    const successClaims = /\b(sent!|done!|email sent|email is on its way|your email is on its way|successfully sent|has been sent)\b/i;
+    if (successClaims.test(sanitized)) {
+      console.log('[SANITIZE] Detected false success claim when no action succeeded, fixing response');
+      // Replace false claims with appropriate response
+      sanitized = sanitized.replace(successClaims, '');
+      sanitized = sanitized.trim();
+      if (!sanitized || sanitized.length < 10) {
+        // If we stripped too much, provide a helpful response
+        sanitized = "I'll help you draft that email. What should I include in it?";
+      }
+    }
+  }
+
+  // Clean up any leftover artifacts
+  sanitized = sanitized.replace(/\s{3,}/g, ' '); // Multiple spaces
+  sanitized = sanitized.replace(/^\s*\.\.\.\s*$/gm, ''); // Lone ellipsis
+  sanitized = sanitized.trim();
+
+  return sanitized || "How can I help you?";
+}
 
 export interface ChatRequest {
   message: string;
@@ -125,20 +171,14 @@ ${emails.length > 0 ? `\nALL EMAILS (most recent ${Math.min(emails.length, 20)})
 ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  - ${e.summary} at ${new Date(e.startTime).toLocaleString()}${e.description ? `\n    Description: ${e.description}` : ''}`).join('\n')}` : ''}`;
 
       if (actionResult) {
-        // Format action result for AI context - AI should NEVER show this to user
-        const actionDescription = actionResult.success 
-          ? `ACTION COMPLETED SUCCESSFULLY: ${actionResult.type} - ${actionResult.details || 'done'}`
-          : `ACTION FAILED: ${actionResult.type} - ${actionResult.details || 'unknown error'}`;
-        contextPrompt += `\n\n[INTERNAL - NEVER SHOW TO USER] ${actionDescription}. Respond with a SHORT casual confirmation like "Sent!" or "Done!" - DO NOT mention JSON or technical details.`;
-      } else {
-        // Check if user message looks like an action request but no action was detected
-        const actionKeywords = ['send', 'email', 'delete', 'archive', 'star', 'mark', 'create event', 'schedule', 'again', 'try'];
-        const lowerMessage = userMessage.toLowerCase();
-        const looksLikeActionRequest = actionKeywords.some(keyword => lowerMessage.includes(keyword));
-        
-        if (looksLikeActionRequest) {
-          contextPrompt += `\n\nNOTE: The user's message appears to request an action, but no action was executed. The action system could not extract the required details. Please ask the user to provide complete information (for emails: recipient address, subject, and body).`;
+        if (actionResult.success) {
+          contextPrompt += `\n\n[ACTION SUCCESS] ${actionResult.type}: ${actionResult.details || 'completed'}. Give a brief confirmation like "Sent!" or "Done!"`;
+        } else {
+          contextPrompt += `\n\n[ACTION FAILED] ${actionResult.type}: ${actionResult.details || 'unknown error'}. Explain what went wrong briefly.`;
         }
+      } else {
+        // NO action was executed - make this crystal clear to the AI
+        contextPrompt += `\n\n[NO ACTION EXECUTED] The user's message did not trigger any action. If they want to send an email, help them draft it by asking for details (recipient, subject, body). Do NOT claim any email was sent - no action happened.`;
       }
     }
 
@@ -160,7 +200,10 @@ ${upcomingEvents.length > 0 ? `\nUPCOMING EVENTS:\n${upcomingEvents.map(e => `  
       contents: conversationContext,
     });
 
-    const aiResponse = response.text || "I'm sorry, I couldn't generate a response. Please try again.";
+    let aiResponse = response.text || "I'm sorry, I couldn't generate a response. Please try again.";
+
+    // POST-PROCESSING: Sanitize response to remove any leaked JSON/code
+    aiResponse = sanitizeAIResponse(aiResponse, actionResult);
 
     const suggestions = generateSuggestions(userMessage, aiResponse);
 
@@ -200,61 +243,51 @@ async function detectAndExecuteAction(
       ? `\n\nRecent conversation history (use this to understand context like "send it again", "that email", etc.):\n${conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}\n`
       : '';
 
-    const actionDetectionPrompt = `Analyze this user message and determine if they want to perform an action. If yes, extract the action details in JSON format.
+    const actionDetectionPrompt = `You are an action detector. Analyze if the user wants to EXECUTE an action RIGHT NOW.
 ${historyContext}
 Current user message: "${userMessage}"
 
-SENDING EMAIL - CONTEXT-AWARE CONFIRMATION DETECTION:
+CRITICAL: Return {type: "none"} by default. Only return an action if ALL conditions are met.
 
-STEP 1: Check if the AI's PREVIOUS message offered to send an email.
-Look for phrases like: "I'll go ahead and send", "I'll send it", "If it works, I'll send", "Should I send this?", "Do you want me to send?", "I can send this now", "Ready to send"
+=== SEND EMAIL ===
+ONLY trigger send_email if BOTH conditions are true:
+1. User's CURRENT message contains an EXPLICIT send command word
+2. All required details (to, subject, body) are available from conversation
 
-STEP 2: If the AI offered to send AND the user's CURRENT message is an affirmative response, trigger send_email.
+EXPLICIT SEND COMMANDS (must contain one of these EXACT patterns):
+- "send it" / "send this" / "send the email" / "send now"
+- "yes send" / "please send" / "go ahead and send"
+- "send" (as the main intent, not "can you send" which is a request)
 
-AFFIRMATIVE RESPONSES (trigger send_email ONLY when AI already offered to send):
-- "yes", "yep", "yeah", "yup", "sure", "ok", "okay", "alright"
-- "sounds good", "sounds great", "sounds good to me", "that works", "that's good", "that's great"
-- "go ahead", "go for it", "do it", "send it", "send", "please send", "yes send"
-- "perfect", "looks good", "looks great", "that's perfect"
-- Any positive acknowledgment that approves the AI's offer to send
+THESE ARE NOT SEND COMMANDS - return {type: "none"}:
+- "can you send" / "could you send" / "write an email" / "draft an email" (these are REQUESTS to help)
+- "ok" / "sure" / "sounds good" / "that's fine" / "you decide" / "you can decide" (these are answers to questions)
+- "make it longer" / "change the subject" / "add more" (these are EDITS)
+- Answering a question like "What subject?" with a subject line
 
-DIRECT SEND COMMANDS (trigger send_email even without AI offering first):
-- "send it", "send the email", "yes send", "go ahead and send", "send now", "please send it"
+If user says "you decide" or "you can decide" for a detail - that's answering your question, NOT a send command!
 
-DO NOT send emails when:
-- User is asking to WRITE/DRAFT a NEW email (they want a draft, not to send yet)
-- User is making EDITS to the email content (e.g., "make it longer", "change the subject")
-- User is answering questions about email details (e.g., providing recipient, subject, etc.)
-- AI has NOT yet offered to send and user just says "ok" or "good" in response to a question
+=== EMAIL CONTENT RULES ===
+When extracting email content from conversation history:
+- "to": The recipient email address mentioned
+- "subject": The subject discussed, or create one if user said "you decide"
+- "body": The message content discussed, properly formatted as an email
 
-CRITICAL RULES FOR EMAIL CONTENT (only apply when user confirms sending):
-1. User messages are INSTRUCTIONS, not literal content to copy!
-2. If user says "tell him X" or "say Y" - you must WRITE a proper email based on that instruction
-3. If user says "make it long" or "write a bit long" - you must GENERATE extended content with multiple paragraphs
-4. If user says "decide yourself" for subject - CREATE a fitting subject line yourself (DO NOT use "decide yourself" as the subject!)
-5. If user describes what they want to say - EXPAND and WRITE it properly as an actual email with greeting, body, and signature
-6. NEVER use the user's instruction text as the literal email content
+=== OTHER ACTIONS ===
+- mark_read/mark_unread/delete/archive/star/unstar: Need emailId from context
+- create_event: Need summary, startTime, endTime
+- update_event: Need eventId and fields to update
+- delete_event: Need eventId
 
-IMPORTANT: When confirming an email send, look at the conversation history to find the email details (to, subject, body) that were discussed/drafted.
+=== JSON FORMAT ===
+send_email: {type: "send_email", to: "email@example.com", subject: "Subject", body: "Email body text"}
+mark_read: {type: "mark_read", emailId: "id"}
+create_event: {type: "create_event", summary: "...", startTime: "ISO", endTime: "ISO"}
+No action: {type: "none"}
 
-Possible actions:
-1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
-   - Trigger when user confirms (see CONTEXT-AWARE CONFIRMATION DETECTION above)
-   - For body: Use the drafted content from conversation, or WRITE proper email based on instructions
-   - For subject: Use the discussed subject, or CREATE an appropriate one
-2. mark_read: {type: "mark_read", emailId: "message_id"}
-3. mark_unread: {type: "mark_unread", emailId: "message_id"}
-4. delete: {type: "delete", emailId: "message_id"}
-5. archive: {type: "archive", emailId: "message_id"}
-6. star: {type: "star", emailId: "message_id"}
-7. unstar: {type: "unstar", emailId: "message_id"}
-8. create_event: {type: "create_event", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
-9. update_event: {type: "update_event", eventId: "event_id", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
-10. delete_event: {type: "delete_event", eventId: "event_id"}
+REMEMBER: Default to {type: "none"}. Only return an action for EXPLICIT execution commands.
 
-If no action is requested or confirmation conditions are not met, return: {type: "none"}
-
-Return ONLY valid JSON, no explanation.`;
+Return ONLY valid JSON.`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
