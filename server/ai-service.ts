@@ -204,19 +204,28 @@ async function detectAndExecuteAction(
 ${historyContext}
 Current user message: "${userMessage}"
 
-CRITICAL: EXPLICIT CONFIRMATION REQUIRED FOR SENDING EMAILS
-You MUST return {type: "none"} unless the user's CURRENT message is an EXPLICIT confirmation to send.
-- EXPLICIT confirmations (ONLY these trigger send_email): "send it", "yes send", "send", "yep send it", "go ahead", "send now", "ok send", "yes go ahead"
-- NOT confirmations (return {type: "none"}): "write an email", "draft an email", "make it longer", "change the subject", "you decide", "whatever", "sounds good", "that's better", "ok", "good"
+SENDING EMAIL - CONTEXT-AWARE CONFIRMATION DETECTION:
+
+STEP 1: Check if the AI's PREVIOUS message offered to send an email.
+Look for phrases like: "I'll go ahead and send", "I'll send it", "If it works, I'll send", "Should I send this?", "Do you want me to send?", "I can send this now", "Ready to send"
+
+STEP 2: If the AI offered to send AND the user's CURRENT message is an affirmative response, trigger send_email.
+
+AFFIRMATIVE RESPONSES (trigger send_email ONLY when AI already offered to send):
+- "yes", "yep", "yeah", "yup", "sure", "ok", "okay", "alright"
+- "sounds good", "sounds great", "sounds good to me", "that works", "that's good", "that's great"
+- "go ahead", "go for it", "do it", "send it", "send", "please send", "yes send"
+- "perfect", "looks good", "looks great", "that's perfect"
+- Any positive acknowledgment that approves the AI's offer to send
+
+DIRECT SEND COMMANDS (trigger send_email even without AI offering first):
+- "send it", "send the email", "yes send", "go ahead and send", "send now", "please send it"
 
 DO NOT send emails when:
-- User is asking to WRITE/DRAFT an email (they want a draft, not to send yet)
-- User is making EDITS to the email content
-- User is answering questions about email details
-- User says "ok" or "good" or "sounds good" (these are acknowledgements, NOT send confirmations)
-
-ONLY send emails when:
-- User's CURRENT message explicitly says to SEND (like "send it", "yes send", "go ahead and send")
+- User is asking to WRITE/DRAFT a NEW email (they want a draft, not to send yet)
+- User is making EDITS to the email content (e.g., "make it longer", "change the subject")
+- User is answering questions about email details (e.g., providing recipient, subject, etc.)
+- AI has NOT yet offered to send and user just says "ok" or "good" in response to a question
 
 CRITICAL RULES FOR EMAIL CONTENT (only apply when user confirms sending):
 1. User messages are INSTRUCTIONS, not literal content to copy!
@@ -226,13 +235,13 @@ CRITICAL RULES FOR EMAIL CONTENT (only apply when user confirms sending):
 5. If user describes what they want to say - EXPAND and WRITE it properly as an actual email with greeting, body, and signature
 6. NEVER use the user's instruction text as the literal email content
 
-IMPORTANT: Only look at conversation history to find email details (to, subject, body) when the user EXPLICITLY confirms sending with words like "send it", "yes send", "go ahead".
+IMPORTANT: When confirming an email send, look at the conversation history to find the email details (to, subject, body) that were discussed/drafted.
 
 Possible actions:
 1. send_email: {type: "send_email", to: "email", subject: "...", body: "...", cc: "...", bcc: "..."}
-   - ONLY trigger this when user EXPLICITLY says to send (see confirmation rules above)
-   - For body: WRITE a proper email based on user's instructions, with greeting and sign-off
-   - For subject: CREATE an appropriate subject line if user says "decide yourself" or similar
+   - Trigger when user confirms (see CONTEXT-AWARE CONFIRMATION DETECTION above)
+   - For body: Use the drafted content from conversation, or WRITE proper email based on instructions
+   - For subject: Use the discussed subject, or CREATE an appropriate one
 2. mark_read: {type: "mark_read", emailId: "message_id"}
 3. mark_unread: {type: "mark_unread", emailId: "message_id"}
 4. delete: {type: "delete", emailId: "message_id"}
@@ -243,7 +252,7 @@ Possible actions:
 9. update_event: {type: "update_event", eventId: "event_id", summary: "...", startTime: "ISO date", endTime: "ISO date", description: "...", location: "...", attendees: ["email1"]}
 10. delete_event: {type: "delete_event", eventId: "event_id"}
 
-If no action is requested or user hasn't explicitly confirmed sending, return: {type: "none"}
+If no action is requested or confirmation conditions are not met, return: {type: "none"}
 
 Return ONLY valid JSON, no explanation.`;
 
